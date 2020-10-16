@@ -1,0 +1,20 @@
+#+TITLE: CORTEX - AN EMACS CONFIGURATION
+#+PROPERTY: header-args :result silent :tangle "~/.emacs.d/init.el" :eval no-export :comments org
+
+* Track Loading Time of Cortex
+
+Starting Emacs has to be as quick as possible. In order to evaluate the time it
+takes to load Cortex, someone has to blow the whistle and start the stopwatch.
+
+#+BEGIN_SRC emacs-lisp
+(defvar my-cortex-start-time (current-time) "Time when Cortex was started")
+#+END_SRC
+
+* Final Spurt
+
+This is the end of Cortex. Let's see how much time it took to load all of the
+shenanigans. Write the result to the =Messages= buffer.
+
+#+BEGIN_SRC emacs-lisp
+(message "→★ Finished loading Cortex in %.2fs" (float-time (time-subtract (current-time) my-cortex-start-time)))
+#+END_SRC
