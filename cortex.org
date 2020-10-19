@@ -61,6 +61,17 @@ Unix uses just line feed ("\n").
       locale-coding-system 'utf-8)
 #+END_SRC
 
+* Answer Questions Quicker
+
+Emacs sometimes requires answering a yes-or-no question in order to make the
+user aware of probably dangerous changes or decisions.
+Simply pressing =y= for a positive or =n= for a negative response is way more
+convenient compared to spelling out the whole words =yes= or =no=.
+
+#+BEGIN_SRC emacs-lisp
+(fset 'yes-or-no-p 'y-or-n-p)
+#+END_SRC
+
 * Final Spurt
 
 This is the end of Cortex. Let's see how much time it took to load all of the
