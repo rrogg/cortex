@@ -10,6 +10,17 @@ takes to load Cortex, someone has to blow the whistle and start the stopwatch.
 (defvar my-cortex-start-time (current-time) "Time when Cortex was started")
 #+END_SRC
 
+* Wrap Lines at a Reasonable Width
+
+Long lines of text have to be wrapped at a width of 80 characters. In order to
+leave long code lines untouched, automatic line wrap is only active in
+=text-mode= and modes which inherit from =text-mode=, like e.g. =org-mode=.
+
+#+BEGIN_SRC emacs-lisp
+(setq-default fill-column 80)
+(add-hook 'text-mode-hook 'auto-fill-mode)
+#+END_SRC
+
 * Final Spurt
 
 This is the end of Cortex. Let's see how much time it took to load all of the
