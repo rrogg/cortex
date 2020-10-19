@@ -81,6 +81,16 @@ gets highlighted.
 (global-hl-line-mode t)
 #+END_SRC
 
+* Use Ibuffer to Edit the Buffer List
+
+By default =C-x C-b= calls the Buffer List. Ibuffer is an alternative with more
+functionality when it comes to manipulate the buffer list and switching
+buffers.
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key (kbd "C-x C-b") 'ibuffer)
+#+END_SRC
+
 * Final Spurt
 
 This is the end of Cortex. Let's see how much time it took to load all of the
