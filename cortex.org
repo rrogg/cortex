@@ -21,6 +21,14 @@ leave long code lines untouched, automatic line wrap is only active in
 (add-hook 'text-mode-hook 'auto-fill-mode)
 #+END_SRC
 
+* Stop the Bell
+
+Acoustic feedback is not wanted for this system. Therefore stop ringing the bell!
+
+#+BEGIN_SRC emacs-lisp
+(setq ring-bell-function #'ignore)
+#+END_SRC
+
 * Final Spurt
 
 This is the end of Cortex. Let's see how much time it took to load all of the
