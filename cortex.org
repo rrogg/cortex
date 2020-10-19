@@ -72,6 +72,15 @@ convenient compared to spelling out the whole words =yes= or =no=.
 (fset 'yes-or-no-p 'y-or-n-p)
 #+END_SRC
 
+* Highlight Current Line in Buffer
+
+To make orientation within the buffer easy, the current line on which point is
+gets highlighted.
+
+#+BEGIN_SRC emacs-lisp
+(global-hl-line-mode t)
+#+END_SRC
+
 * Final Spurt
 
 This is the end of Cortex. Let's see how much time it took to load all of the
