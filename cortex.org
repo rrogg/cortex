@@ -10,6 +10,13 @@ takes to load Cortex, someone has to blow the whistle and start the stopwatch.
 (defvar my-cortex-start-time (current-time) "Time when Cortex was started")
 #+END_SRC
 
+The start time is also used in logs. The format of the time string is different
+from =my-cortex-start-time=.
+
+#+BEGIN_SRC emacs-lisp
+(setq my-cortex-start-time-iso (format-time-string "%Y-%m-%dT%T"))
+#+END_SRC
+
 * Wrap Lines at a Reasonable Width
 
 Long lines of text have to be wrapped at a width of 80 characters. In order to
@@ -190,6 +197,58 @@ Similarly, =:config= can be used to execute code after a package is loaded.
 (use-package no-littering
   :ensure t)
 (require 'no-littering)
+#+END_SRC
+
+* Logging
+
+Because Cortex is likely used on multiple hosts, each of those requires
+host-specific logging. This will make it easier to compare versions of Emacs and
+its packages. The following code is heavily inspired by a [[https://github.com/novoid/dot-emacs/blob/master/config.org#host-specific-log-file-my-log-hostspecific][section in Karl Voit's
+dot-emacs]].
+
+A folder for all sorts of logs is defined in =my-cortex-var-log-directory=. If
+this folder is not existing, it gets created.
+The log file is defined in =my-cortex-var-log-hostname-file= and consists of the
+hostname of the system.
+
+#+BEGIN_SRC emacs-lisp
+(setq my-cortex-var-log-directory (concat no-littering-var-directory "log/"))
+(when (not (file-exists-p my-cortex-var-log-directory))
+  (make-directory my-cortex-var-log-directory))
+(setq my-cortex-var-log-hostname-file (concat my-cortex-var-log-directory "host-" system-name ".txt"))
+#+END_SRC
+
+The content of the host-specific log is similar to the following:
+
+#+BEGIN_EXAMPLE
+Started on 2020-10-20T22:09:44
+emacs-version 27.1
+org-version 9.1.6
+magit-version 2.10.3
+#+END_EXAMPLE
+
+At startup of Emacs the host-specific log file is overwritten wit the current time.
+
+#+BEGIN_SRC emacs-lisp
+(write-region (concat "Started on " my-cortex-start-time-iso "\n") nil my-cortex-var-log-hostname-file)
+#+END_SRC
+
+Using the function =my-cortex-log-hostspecific=, will append a string,
+e.g. emacs-version, and a command, e.g. =emacs-version=, to the log file.
+
+#+BEGIN_SRC emacs-lisp
+(defun my-cortex-log-hostspecific (string command)
+  "append a string and the result of a command to the my-cortex-var-log-hostname-file file"
+  (interactive)
+  (write-region (concat string " " command "\n") nil my-cortex-var-log-hostname-file t)
+)
+#+END_SRC
+
+This is the first use of the function above. Write the Emacs version to the log
+file.
+
+#+BEGIN_SRC emacs-lisp
+(my-cortex-log-hostspecific "emacs-version" emacs-version)
 #+END_SRC
 
 * Redirect Backups and Auto-Saves
