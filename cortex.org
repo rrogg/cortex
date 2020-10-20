@@ -247,6 +247,15 @@ The body of the message is wrapped at length 72.
           git-commit-fill-column 72))
 #+END_SRC
 
+* Maximize Frame Window
+
+The Emacs frame is maximized at all times to make use of every pixel on the
+screen.
+
+#+BEGIN_SRC emacs-lisp
+(toggle-frame-maximized)
+#+END_SRC
+
 * Final Spurt
 
 This is the end of Cortex. Let's see how much time it took to load all of the
