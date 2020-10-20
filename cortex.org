@@ -251,6 +251,61 @@ file.
 (my-cortex-log-hostspecific "emacs-version" emacs-version)
 #+END_SRC
 
+* Check for Binaries
+
+Some functionality in Cortex depends on external binaries.
+Receiving feedback if those are present on the system is valuable for
+debugging.
+The function =my-binary-found= returns the path for a given binary.
+
+#+BEGIN_SRC emacs-lisp
+(defun my-binary-found(binaryname)
+  "Returns the path where a binary executable can be found."
+  (locate-file binaryname exec-path exec-suffixes 1))
+#+END_SRC
+
+This can be used to generate a report like below:
+
+#+BEGIN_EXAMPLE
+git binary: /usr/bin/git
+aspell binary: /usr/bin/aspell
+gnuplot binary:
+#+END_EXAMPLE
+
+The function =my-eval-if-binary-or-warn= checks for a given binary and writes
+the binary name into the list =my-binary-not-found-list=.
+The list is displayed in the =*Messages*= buffer after Cortex has been loaded.
+
+#+BEGIN_SRC emacs-lisp
+(defvar my-binary-not-found-list nil
+  "Holds a list of binaries which could not be found via my-eval-if-binary-or-warn()")
+(defun my-eval-if-binary-or-warn (binaryname &optional warningtext)
+  "Checks if a binary can be found in the path via my-binary-found().
+
+  If not found, a warning message is printed, which can be defined as an optional parameter as well.
+  Additionally, the not found binaries are collected in the variable my-binary-not-found-list."
+  (or warningtext (setq warningtext (concat "»»» I could not locate the PATH-binary for: " binaryname)))
+  (let* ((binarypath (my-binary-found binaryname)))
+    (if binarypath
+      ;; binary was found in exec-path
+      (concat binarypath)
+    (progn
+      ;; binary NOT found in exec-path:
+      (message warningtext)
+      (if my-binary-not-found-list
+        (add-to-list 'my-binary-not-found-list binaryname)
+        (setq my-binary-not-found-list (list binaryname)))))))
+#+END_SRC
+
+=my-eval-if-binary-or-warn= is also used to evaluate if a functionality of
+Cortex should be configured or not. See the example below:
+
+#+BEGIN_EXAMPLE
+(when (my-eval-if-binary-or-warn "git")
+  (use-package magit
+    :ensure t))
+#+END_EXAMPLE
+
 * Redirect Backups and Auto-Saves
 
 Emacs creates backups of every file currently opened and containing changes.
@@ -279,8 +334,9 @@ recover-file <RET> file <RET>=.
 =magit= is a superb interface to =git=.
 
 #+BEGIN_SRC emacs-lisp
-(use-package magit
-  :ensure t)
+(when (my-eval-if-binary-or-warn "git")
+  (use-package magit
+    :ensure t))
 #+END_SRC
 
 ** How to Write a Good Commit Message
@@ -352,7 +408,9 @@ screen.
 
 This is the end of Cortex. Let's see how much time it took to load all of the
 shenanigans. Write the result to the =Messages= buffer.
+List missing binaries needed for certain functionality of Cortex. 
 
 #+BEGIN_SRC emacs-lisp
 (message "→★ Finished loading Cortex in %.2fs" (float-time (time-subtract (current-time) my-cortex-start-time)))
+(message "»»» Binaries not found in checks above: %s" my-binary-not-found-list)
 #+END_SRC
