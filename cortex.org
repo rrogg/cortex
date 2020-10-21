@@ -63,6 +63,7 @@ Unix uses just line feed ("\n").
 #+BEGIN_SRC emacs-lisp
 (prefer-coding-system 'utf-8)
 (set-default-coding-systems 'utf-8-unix)
+(setq-default buffer-file-coding-system 'utf-8-unix)
 (set-charset-priority 'unicode)
 (setq default-process-coding-system '(utf-8-unix . utf-8-unix)
       locale-coding-system 'utf-8)
@@ -389,10 +390,11 @@ the same for the second line, which should be blank.
 The body of the message is wrapped at length 72.
 
 #+BEGIN_SRC emacs-lisp
-(use-package magit
-  :config
-    (setq git-commit-summary-max-length 50
-          git-commit-fill-column 72))
+(when (my-eval-if-binary-or-warn "git")
+  (use-package magit
+    :config
+      (setq git-commit-summary-max-length 50
+            git-commit-fill-column 72)))
 #+END_SRC
 
 * Maximize Frame Window
