@@ -17,6 +17,154 @@ from =my-cortex-start-time=.
 (setq my-cortex-start-time-iso (format-time-string "%Y-%m-%dT%T"))
 #+END_SRC
 
+* Server Start
+
+Emacs offers a server mode, which allows to open additional from outside of
+Emacs in the same session that is already running. No need to open a file in
+another Emcas and reload the complete config again for it.
+
+#+BEGIN_SRC emacs-lisp
+(server-start)
+#+END_SRC
+
+* Support for Non-Linux Systems
+
+** Windows
+
+*** Installation
+Emacs is installed from chocolatey via =cmd.exe=:
+
+#+BEGIN_EXAMPLE
+choco install emacs
+#+END_EXAMPLE
+
+The environment variable =HOME= does not exist by default, so it needs to be
+created manually:
+
+#+BEGIN_EXAMPLE
+This PC (right-click)
+-> Properties
+-> Computer name, domain, and workgroup settings
+-> Change settings
+-> Advanced
+-> Environment Variables...
+-> New
+HOME C:\home\rrogg
+#+END_EXAMPLE
+
+On first start of Emacs, the =~/.emacs.d/= directory gets created automatically.
+
+*** Cloning Cortex Repository
+
+In order to clone the Cortex repository, install =git= from =chocolatey= via
+=cmd.exe=:
+
+#+BEGIN_EXAMPLE
+choco install git
+#+END_EXAMPLE
+
+=git= should be automatically found by Emacs, no need to add it to the path.
+
+Clone Cortex via =git bash=:
+
+#+BEGIN_EXAMPLE
+cd ~/src
+git clone https://github.com/rrogg/cortex.git
+#+END_EXAMPLE
+
+*** Generall Issues
+
+**** =~/.emacs.d/server/= unsafe location
+
+Emacs complaints about =~/.emacs.d/server/= not beeing a safe loacation (magit,
+server-start).
+This is resolved by changing the access rights to that folder via =cmd.exe=:
+
+#+BEGIN_EXAMPLE
+cd %HOME%\.emacs.d
+takeown /f server
+#+END_EXAMPLE
+
+**** Attach Files to Already Open Emacs Session
+
+When Emacs is started as a daemon (=(server-start)=), all additionaly opened
+files should be openend within the current session and not in a seperate
+instance of Emacs. That instance would load Cortex again, which takes time. The
+buffer list is also not shared between those instances.
+
+Emacs on Windows comes with several execuatables, of which I use two:
+
+- =runemacs.exe=
+- =emacsclientw.exe=
+
+Should Emacs not be started, e.g. after a reboot, I use =runemacs.exe= to do so.
+Loading Cortex, Emacs will create a daemon in the background, to which other
+files can be attached when they are opened.
+Opening files is either done directly from within Emacs or by opening them from
+a folder.
+In order to always attach those externaly opened files to the running session, I
+use =emacsclientw.exe= with some parameters. It needs a file name to open in order to
+start Emacs, so I can't use it to start Emacs in a way that it always does what
+I want.
+The =Target= value of the shortcut is the following:
+
+#+BEGIN_EXAMPLE
+C:\ProgramData\chocolatey\bin\emacsclientw.exe -n -a ""
+#+END_EXAMPLE
+
+If there is a Emacs server running, it will open the file in the current
+session. If no server has been started yet, it will do so (=-a ""=).
+
+Now this shortcut has to be set as default programm to open the specific file
+extension with. This has to be done once per file extension.
+It could also be set via Windows Registry, but I failed to add more file
+extensions to the =.reg= file. This file just needs to be executed and it will
+set the default programm.
+
+#+BEGIN_EXAMPLE
+Windows Registry Editor Version 5.00
+[HKEY_CURRENT_USER\Software\Classes\texfile]
+[HKEY_CURRENT_USER\Software\Classes\texfile\Shell]
+[HKEY_CURRENT_USER\Software\Classes\texfile\Shell\Open]
+[HKEY_CURRENT_USER\Software\Classes\texfile\Shell\Open\Command]
+@="C:\\ProgramData\\chocolatey\\bin\\emacsclientw.exe -n -a \"C:\\ProgramData\\chocolatey\\bin\\runemacs.exe\" \"%1\" %*"
+[HKEY_CURRENT_USER\Software\Classes\.tex]
+@="texfile"
+[HKEY_CURRENT_USER\Software\Classes\.bib]
+@="texfile"
+[HKEY_CURRENT_USER\Software\Classes\.lco]
+@="texfile"
+[HKEY_CURRENT_USER\Software\Classes\.sty]
+@="texfile"
+[HKEY_CURRENT_USER\Software\Classes\.cls]
+@="texfile"
+[HKEY_CURRENT_USER\Software\Classes\txtfile]
+[HKEY_CURRENT_USER\Software\Classes\txtfile\Shell]
+[HKEY_CURRENT_USER\Software\Classes\txtfile\Shell\Open]
+[HKEY_CURRENT_USER\Software\Classes\txtfile\Shell\Open\Command]
+@="C:\\ProgramData\\chocolatey\\bin\\emacsclientw.exe -n -a \"C:\\ProgramData\\chocolatey\\bin\\runemacs.exe\" \"%1\" %*"
+[HKEY_CURRENT_USER\Software\Classes\.txt]
+@="txtfile"
+[HKEY_CURRENT_USER\Software\Classes\.org]
+@="txtfile"
+[HKEY_CURRENT_USER\Software\Classes\scriptfile]
+[HKEY_CURRENT_USER\Software\Classes\scriptfile\Shell]
+[HKEY_CURRENT_USER\Software\Classes\scriptfile\Shell\Open]
+[HKEY_CURRENT_USER\Software\Classes\scriptfile\Shell\Open\Command]
+@="C:\\ProgramData\\chocolatey\\bin\\emacsclientw.exe -n -a \"C:\\ProgramData\\chocolatey\\bin\\runemacs.exe\" \"%1\" %*"
+[HKEY_CURRENT_USER\Software\Classes\.sh]
+@="scriptfile"
+[HKEY_CURRENT_USER\Software\Classes\cfile]
+[HKEY_CURRENT_USER\Software\Classes\cfile\Shell]
+[HKEY_CURRENT_USER\Software\Classes\cfile\Shell\Open]
+[HKEY_CURRENT_USER\Software\Classes\cfile\Shell\Open\Command]
+@="C:\\ProgramData\\chocolatey\\bin\\emacsclientw.exe -n -a \"C:\\ProgramData\\chocolatey\\bin\\runemacs.exe\" \"%1\" %*"
+[HKEY_CURRENT_USER\Software\Classes\.c]
+@="cfile"
+[HKEY_CURRENT_USER\Software\Classes\.h]
+@="cfile"
+#+END_EXAMPLE
+
 * Wrap Lines at a Reasonable Width
 
 Long lines of text have to be wrapped at a width of 80 characters. In order to
@@ -335,9 +483,9 @@ recover-file <RET> file <RET>=.
 =magit= is a superb interface to =git=.
 
 #+BEGIN_SRC emacs-lisp
-(when (my-eval-if-binary-or-warn "git")
-  (use-package magit
-    :ensure t))
+(use-package magit
+  :if (my-eval-if-binary-or-warn "git")
+  :ensure t)
 #+END_SRC
 
 ** How to Write a Good Commit Message
@@ -390,11 +538,11 @@ the same for the second line, which should be blank.
 The body of the message is wrapped at length 72.
 
 #+BEGIN_SRC emacs-lisp
-(when (my-eval-if-binary-or-warn "git")
-  (use-package magit
-    :config
-      (setq git-commit-summary-max-length 50
-            git-commit-fill-column 72)))
+(use-package magit
+  :if (my-eval-if-binary-or-warn "git")
+  :config
+    (setq git-commit-summary-max-length 50
+          git-commit-fill-column 72))
 #+END_SRC
 
 * Maximize Frame Window
