@@ -165,6 +165,18 @@ Windows Registry Editor Version 5.00
 @="cfile"
 #+END_EXAMPLE
 
+* Disable GUI components
+
+Display no GUI components other than the =modline=.
+
+#+BEGIN_SRC emacs-lisp
+(use-package emacs
+  :init
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1))
+#+END_SRC
+
 * Wrap Lines at a Reasonable Width
 
 Long lines of text have to be wrapped at a width of 80 characters. In order to
