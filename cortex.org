@@ -326,6 +326,18 @@ package is installed without the =use-package= macro.
   (package-install 'use-package))
 #+END_SRC
 
+Some defaults are changed before =use-package= is loaded.
+In order to make better use of the help commands, hooks are written using their
+full name, when using the =:hook= option of =use-package= (after-init ==>
+after-init-hook).
+
+#+BEGIN_SRC emacs-lisp
+(eval-and-compile
+  (setq use-package-hook-name-suffix nil))
+(eval-when-compile
+  (require 'use-package))
+#+END_SRC
+
 =use-package= provides several keywords to load and configure a package.
 See a basic example below.
 
@@ -349,6 +361,99 @@ The =:init= keyword executes code before a package is loaded. It accepts one
 or more forms, up to the next keyword. 
 
 Similarly, =:config= can be used to execute code after a package is loaded.
+
+* Themes
+
+The look of Emacs is defined in a theme. Custom themes usually alter e.g. the
+colours used to highlight headings or code.
+Readability and accessibility has highest priority. This may be to the expense
+of having a "stylish" looking Emacs, but that's OK.
+
+I found out about the =Modus= themes created by [[https://protesilaos.com][Protesilaos Stavrou]] while
+watching one of his videos about Emacs. Those themes are conform with the
+highest accessibility standard for colour contrast between background and
+foreground values (WCAG AAA).
+
+The themes will be shipped with Emacs starting version =28.1=. They are also
+available from ELPA and Melpa archives. The version from Melpa is a
+representation of the latest commit to the master branch of the themes repo and
+should be the latest version available.
+
+=Modus Operandi= is the light variant.
+
+#+BEGIN_SRC emacs-lisp
+(use-package modus-operandi-theme
+  :ensure t
+  :pin melpa)
+#+END_SRC
+
+=Modus Vivendi= is the dark variant.
+
+#+BEGIN_SRC emacs-lisp
+(use-package modus-vivendi-theme
+  :ensure t
+  :pin melpa)
+#+END_SRC
+
+The themes come with a lot of options for customization. If those are used, they
+need to be set prior to the loading of the theme. It is very likely that
+customizations should have effect on both variants of the theme. Therefore a
+wrapper function can be used for customization and loading of the two themes.
+
+A helper macro is needed to make this work.
+=my-format-sexp= will replace the symbolic expressions within =sexp= with
+objects defined in =objects= and evaluate the resulting code.
+
+#+BEGIN_SRC emacs-lisp
+(use-package emacs
+  :config
+  (defmacro my-format-sexp (sexp &rest objects)
+    `(eval (read (format ,(format "%S" sexp) ,@objects)))))
+#+END_SRC
+
+The =my-modus-theme-after-load-hook= can be used to run additional code
+specifically after a theme has been loaded.
+
+With the help of =my-format-sexp= each of the two theme variants get a separate
+function (=my-modus-operandi= and =my-modus-vivendi=) from a single source of
+code. All customizations can be done here.
+
+#+BEGIN_SRC emacs-lisp
+(use-package emacs
+  :config
+  (defvar my-modus-theme-after-load-hook nil
+    "Hook that runs after loading a Modus theme.")
+
+  (dolist (themes '("operandi" "vivendi"))
+    (my-format-sexp
+      (defun my-modus-%1$s ()
+        (setq modus-%1$s-theme-org-blocks nil
+              modus-%1$s-theme-scale-headings nil)
+        (load-theme 'modus-%1$s t)
+        (run-hooks 'my-modus-theme-after-load-hook))
+      themes)))
+#+END_SRC
+
+The light theme is the default.
+I like to toggle between the variants manually for now.
+There are options to switch between the variants atomatically by referencing
+sunset and sundown, which might be explored further in the future.
+
+#+BEGIN_SRC emacs-lisp
+(use-package emacs
+  :config
+  (defun my-themes-toggle ()
+    "Toggle between light theme (`my-modus-operandi') and dark theme (`my-modus-vivendi')."
+    (interactive)
+    (if (eq (car custom-enabled-themes) 'modus-operandi)
+        (progn
+          (disable-theme 'modus-operandi)
+          (my-modus-vivendi))
+      (disable-theme 'modus-vivendi)
+      (my-modus-operandi)))
+  :hook (after-init-hook . my-modus-operandi)
+  :bind ("<f5>" . my-themes-toggle))
+#+END_SRC
 
 * no-littering - Keep .emcas.d Clean
 
