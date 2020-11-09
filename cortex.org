@@ -364,6 +364,8 @@ Similarly, =:config= can be used to execute code after a package is loaded.
 
 * Themes
 
+| [2020-11-03] | Initial setup |
+
 The look of Emacs is defined in a theme. Custom themes usually alter e.g. the
 colours used to highlight headings or code.
 Readability and accessibility has highest priority. This may be to the expense
@@ -455,7 +457,50 @@ sunset and sundown, which might be explored further in the future.
   :bind ("<f5>" . my-themes-toggle))
 #+END_SRC
 
-* no-littering - Keep .emcas.d Clean
+* Fonts
+
+Typefaces (e.g. Inter) and fonts (e.g. Inter Extra Light 12) can be defined by
+=set-face-attribute=. There are three faces: =default=, =fixed-pitch=
+(monospaced) and =variable-pitch= (proportionally spaced). =fixed-pitch= is used
+in programming modes. Sometimes reading prose or non-code texts is easier when
+displayed in a =variable-pitch=.
+
+For now, I'll start with my font choices from earlier configurations. Those are
+=Hack= as monospaced font and =Inter= as proportionally spaced font.
+
+#+BEGIN_SRC emacs-lisp
+(use-package emacs
+  :config
+  (set-face-attribute 'default nil :family "Hack" :height 120)
+  (set-face-attribute 'fixed-pitch nil :family "Hack" :height 120)
+  (set-face-attribute 'variable-pitch nil :family "Inter" :height 120))
+#+END_SRC
+
+** Linux
+
+=Hack= and =Inter= can be installed via =pacman=.
+
+#+BEGIN_EXAMPLE
+sudo pacman -S ttf-hack inter-font
+#+END_EXAMPLE
+
+Fonts will be installed to:
+
+- =~/.local/share/fonts=  #if installed per user, without =sudo=
+- =/usr/share/fonts=
+
+** Windows
+
+=Hack= can be installed via chocolatey.
+
+#+BEGIN_EXAMPLE
+chocolatey install hackfont
+#+END_EXAMPLE
+
+=Inter= needs to be downloaded from the [[https://rsms.me/inter/][website]] and installed manually according
+to the included install instructions.
+
+* no-littering - Keep .emacs.d Clean
 
 | [2020-10-20] | Initial setup |
 
