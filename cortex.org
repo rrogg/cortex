@@ -7,14 +7,14 @@ Starting Emacs has to be as quick as possible. In order to evaluate the time it
 takes to load Cortex, someone has to blow the whistle and start the stopwatch.
 
 #+BEGIN_SRC emacs-lisp
-(defvar my-cortex-start-time (current-time) "Time when Cortex was started")
+(defvar rrogg/cortex-start-time (current-time) "Time when Cortex was started")
 #+END_SRC
 
 The start time is also used in logs. The format of the time string is different
-from =my-cortex-start-time=.
+from =rrogg/cortex-start-time=.
 
 #+BEGIN_SRC emacs-lisp
-(setq my-cortex-start-time-iso (format-time-string "%Y-%m-%dT%T"))
+(setq rrogg/cortex-start-time-iso (format-time-string "%Y-%m-%dT%T"))
 #+END_SRC
 
 * Server Start
@@ -207,8 +207,8 @@ as one doesn't have to think about creating a new file for every unrelated
 thought. The welcome message isn't needed, so it gets disabled.
 
 #+BEGIN_SRC emacs-lisp
-(setq inhibit-splash-screen t
-      initial-scratch-message nil)
+(setq inhibit-splash-screen t)
+(setq initial-scratch-message nil)
 #+END_SRC
 
 * Force a Sane Coding System
@@ -225,8 +225,8 @@ Unix uses just line feed ("\n").
 (set-default-coding-systems 'utf-8-unix)
 (setq-default buffer-file-coding-system 'utf-8-unix)
 (set-charset-priority 'unicode)
-(setq default-process-coding-system '(utf-8-unix . utf-8-unix)
-      locale-coding-system 'utf-8)
+(setq default-process-coding-system '(utf-8-unix . utf-8-unix))
+(setq locale-coding-system 'utf-8)
 #+END_SRC
 
 * Answer Questions Quicker
@@ -403,36 +403,36 @@ customizations should have effect on both variants of the theme. Therefore a
 wrapper function can be used for customization and loading of the two themes.
 
 A helper macro is needed to make this work.
-=my-format-sexp= will replace the symbolic expressions within =sexp= with
+=rrogg/format-sexp= will replace the symbolic expressions within =sexp= with
 objects defined in =objects= and evaluate the resulting code.
 
 #+BEGIN_SRC emacs-lisp
 (use-package emacs
   :config
-  (defmacro my-format-sexp (sexp &rest objects)
+  (defmacro rrogg/format-sexp (sexp &rest objects)
     `(eval (read (format ,(format "%S" sexp) ,@objects)))))
 #+END_SRC
 
-The =my-modus-theme-after-load-hook= can be used to run additional code
+The =rrogg/modus-theme-after-load-hook= can be used to run additional code
 specifically after a theme has been loaded.
 
-With the help of =my-format-sexp= each of the two theme variants get a separate
-function (=my-modus-operandi= and =my-modus-vivendi=) from a single source of
+With the help of =rrogg/format-sexp= each of the two theme variants get a separate
+function (=rrogg/modus-operandi= and =rrogg/modus-vivendi=) from a single source of
 code. All customizations can be done here.
 
 #+BEGIN_SRC emacs-lisp
 (use-package emacs
   :config
-  (defvar my-modus-theme-after-load-hook nil
+  (defvar rrogg/modus-theme-after-load-hook nil
     "Hook that runs after loading a Modus theme.")
 
   (dolist (themes '("operandi" "vivendi"))
-    (my-format-sexp
-      (defun my-modus-%1$s ()
-        (setq modus-%1$s-theme-org-blocks nil
-              modus-%1$s-theme-scale-headings nil)
+    (rrogg/format-sexp
+      (defun rrogg/modus-%1$s ()
+        (setq modus-%1$s-theme-org-blocks nil)
+        (setq modus-%1$s-theme-scale-headings nil)
         (load-theme 'modus-%1$s t)
-        (run-hooks 'my-modus-theme-after-load-hook))
+        (run-hooks 'rrogg/modus-theme-after-load-hook))
       themes)))
 #+END_SRC
 
@@ -444,17 +444,17 @@ sunset and sundown, which might be explored further in the future.
 #+BEGIN_SRC emacs-lisp
 (use-package emacs
   :config
-  (defun my-themes-toggle ()
-    "Toggle between light theme (`my-modus-operandi') and dark theme (`my-modus-vivendi')."
+  (defun rrogg/themes-toggle ()
+    "Toggle between light theme (`rrogg/modus-operandi') and dark theme (`rrogg/modus-vivendi')."
     (interactive)
     (if (eq (car custom-enabled-themes) 'modus-operandi)
         (progn
           (disable-theme 'modus-operandi)
-          (my-modus-vivendi))
+          (rrogg/modus-vivendi))
       (disable-theme 'modus-vivendi)
-      (my-modus-operandi)))
-  :hook (after-init-hook . my-modus-operandi)
-  :bind ("<f5>" . my-themes-toggle))
+      (rrogg/modus-operandi)))
+  :hook (after-init-hook . rrogg/modus-operandi)
+  :bind ("<f5>" . rrogg/themes-toggle))
 #+END_SRC
 
 * Fonts
@@ -517,16 +517,16 @@ host-specific logging. This will make it easier to compare versions of Emacs and
 its packages. The following code is heavily inspired by a [[https://github.com/novoid/dot-emacs/blob/master/config.org#host-specific-log-file-my-log-hostspecific][section in Karl Voit's
 dot-emacs]].
 
-A folder for all sorts of logs is defined in =my-cortex-var-log-directory=. If
+A folder for all sorts of logs is defined in =rrogg/cortex-var-log-directory=. If
 this folder is not existing, it gets created.
-The log file is defined in =my-cortex-var-log-hostname-file= and consists of the
+The log file is defined in =rrogg/cortex-var-log-hostname-file= and consists of the
 hostname of the system.
 
 #+BEGIN_SRC emacs-lisp
-(setq my-cortex-var-log-directory (concat no-littering-var-directory "log/"))
-(when (not (file-exists-p my-cortex-var-log-directory))
-  (make-directory my-cortex-var-log-directory))
-(setq my-cortex-var-log-hostname-file (concat my-cortex-var-log-directory "host-" system-name ".txt"))
+(setq rrogg/cortex-var-log-directory (concat no-littering-var-directory "log/"))
+(when (not (file-exists-p rrogg/cortex-var-log-directory))
+  (make-directory rrogg/cortex-var-log-directory))
+(setq rrogg/cortex-var-log-hostname-file (concat rrogg/cortex-var-log-directory "host-" system-name ".txt"))
 #+END_SRC
 
 The content of the host-specific log is similar to the following:
@@ -541,17 +541,17 @@ magit-version 2.10.3
 At startup of Emacs the host-specific log file is overwritten wit the current time.
 
 #+BEGIN_SRC emacs-lisp
-(write-region (concat "Started on " my-cortex-start-time-iso "\n") nil my-cortex-var-log-hostname-file)
+(write-region (concat "Started on " rrogg/cortex-start-time-iso "\n") nil rrogg/cortex-var-log-hostname-file)
 #+END_SRC
 
-Using the function =my-cortex-log-hostspecific=, will append a string,
+Using the function =rrogg/cortex-log-hostspecific=, will append a string,
 e.g. emacs-version, and a command, e.g. =emacs-version=, to the log file.
 
 #+BEGIN_SRC emacs-lisp
-(defun my-cortex-log-hostspecific (string command)
-  "append a string and the result of a command to the my-cortex-var-log-hostname-file file"
+(defun rrogg/cortex-log-hostspecific (string command)
+  "append a string and the result of a command to the rrogg/cortex-var-log-hostname-file file"
   (interactive)
-  (write-region (concat string " " command "\n") nil my-cortex-var-log-hostname-file t)
+  (write-region (concat string " " command "\n") nil rrogg/cortex-var-log-hostname-file t)
 )
 #+END_SRC
 
@@ -559,7 +559,7 @@ This is the first use of the function above. Write the Emacs version to the log
 file.
 
 #+BEGIN_SRC emacs-lisp
-(my-cortex-log-hostspecific "emacs-version" emacs-version)
+(rrogg/cortex-log-hostspecific "emacs-version" emacs-version)
 #+END_SRC
 
 * Check for Binaries
@@ -567,10 +567,10 @@ file.
 Some functionality in Cortex depends on external binaries.
 Receiving feedback if those are present on the system is valuable for
 debugging.
-The function =my-binary-found= returns the path for a given binary.
+The function =rrogg/binary-found= returns the path for a given binary.
 
 #+BEGIN_SRC emacs-lisp
-(defun my-binary-found(binaryname)
+(defun rrogg/binary-found(binaryname)
   "Returns the path where a binary executable can be found."
   (locate-file binaryname exec-path exec-suffixes 1))
 #+END_SRC
@@ -583,36 +583,36 @@ aspell binary: /usr/bin/aspell
 gnuplot binary:
 #+END_EXAMPLE
 
-The function =my-eval-if-binary-or-warn= checks for a given binary and writes
-the binary name into the list =my-binary-not-found-list=.
+The function =rrogg/eval-if-binary-or-warn= checks for a given binary and writes
+the binary name into the list =rrogg/binary-not-found-list=.
 The list is displayed in the =*Messages*= buffer after Cortex has been loaded.
 
 #+BEGIN_SRC emacs-lisp
-(defvar my-binary-not-found-list nil
-  "Holds a list of binaries which could not be found via my-eval-if-binary-or-warn()")
-(defun my-eval-if-binary-or-warn (binaryname &optional warningtext)
-  "Checks if a binary can be found in the path via my-binary-found().
+(defvar rrogg/binary-not-found-list nil
+  "Holds a list of binaries which could not be found via rrogg/eval-if-binary-or-warn()")
+(defun rrogg/eval-if-binary-or-warn (binaryname &optional warningtext)
+  "Checks if a binary can be found in the path via rrogg/binary-found().
 
   If not found, a warning message is printed, which can be defined as an optional parameter as well.
-  Additionally, the not found binaries are collected in the variable my-binary-not-found-list."
+  Additionally, the not found binaries are collected in the variable rrogg/binary-not-found-list."
   (or warningtext (setq warningtext (concat "»»» I could not locate the PATH-binary for: " binaryname)))
-  (let* ((binarypath (my-binary-found binaryname)))
+  (let* ((binarypath (rrogg/binary-found binaryname)))
     (if binarypath
       ;; binary was found in exec-path
       (concat binarypath)
     (progn
       ;; binary NOT found in exec-path:
       (message warningtext)
-      (if my-binary-not-found-list
-        (add-to-list 'my-binary-not-found-list binaryname)
-        (setq my-binary-not-found-list (list binaryname)))))))
+      (if rrogg/binary-not-found-list
+        (add-to-list 'rrogg/binary-not-found-list binaryname)
+        (setq rrogg/binary-not-found-list (list binaryname)))))))
 #+END_SRC
 
-=my-eval-if-binary-or-warn= is also used to evaluate if a functionality of
+=rrogg/eval-if-binary-or-warn= is also used to evaluate if a functionality of
 Cortex should be configured or not. See the example below:
 
 #+BEGIN_EXAMPLE
-(when (my-eval-if-binary-or-warn "git")
+(when (rrogg/eval-if-binary-or-warn "git")
   (use-package magit
     :ensure t))
 #+END_EXAMPLE
@@ -646,7 +646,7 @@ recover-file <RET> file <RET>=.
 
 #+BEGIN_SRC emacs-lisp
 (use-package magit
-  :if (my-eval-if-binary-or-warn "git")
+  :if (rrogg/eval-if-binary-or-warn "git")
   :ensure t)
 #+END_SRC
 
@@ -701,10 +701,10 @@ The body of the message is wrapped at length 72.
 
 #+BEGIN_SRC emacs-lisp
 (use-package magit
-  :if (my-eval-if-binary-or-warn "git")
+  :if (rrogg/eval-if-binary-or-warn "git")
   :config
-    (setq git-commit-summary-max-length 50
-          git-commit-fill-column 72))
+    (setq git-commit-summary-max-length 50)
+    (setq git-commit-fill-column 72))
 #+END_SRC
 
 * Maximize Frame Window
@@ -723,6 +723,6 @@ shenanigans. Write the result to the =Messages= buffer.
 List missing binaries needed for certain functionality of Cortex. 
 
 #+BEGIN_SRC emacs-lisp
-(message "→★ Finished loading Cortex in %.2fs" (float-time (time-subtract (current-time) my-cortex-start-time)))
-(message "»»» Binaries not found in checks above: %s" my-binary-not-found-list)
+(message "→★ Finished loading Cortex in %.2fs" (float-time (time-subtract (current-time) rrogg/cortex-start-time)))
+(message "»»» Binaries not found in checks above: %s" rrogg/binary-not-found-list)
 #+END_SRC
