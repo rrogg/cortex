@@ -716,6 +716,22 @@ screen.
 (toggle-frame-maximized)
 #+END_SRC
 
+* Save Commands Across Sessions
+
+Emacs doesn't have a persistent command history by default. The build-in history
+gets resetted with every new Emacs session. The package =savehist= implements a
+session independent history.
+
+#+BEGIN_SRC emacs-lisp
+(use-package savehist
+  :config
+  (setq savehist-file (concat no-littering-var-directory "savehist"))
+  (setq savehist-save-minibuffer-history t)
+  (setq history-length 1000)
+  (setq history-delete-duplicates t)
+  :hook (after-init-hook . savehist-mode))
+#+END_SRC
+
 * Final Spurt
 
 This is the end of Cortex. Let's see how much time it took to load all of the
