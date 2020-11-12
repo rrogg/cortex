@@ -72,7 +72,7 @@ cd ~/src
 git clone https://github.com/rrogg/cortex.git
 #+END_EXAMPLE
 
-*** Generall Issues
+*** General Issues
 
 **** =~/.emacs.d/server/= unsafe location
 
@@ -730,6 +730,53 @@ session independent history.
   (setq history-length 1000)
   (setq history-delete-duplicates t)
   :hook (after-init-hook . savehist-mode))
+#+END_SRC
+
+* Org Mode
+
+Org mode is right at the core of Cortex. It's the glue which connects task
+management, literate programming, contact managment, dealing with mail,
+composing and exporting text and many more things.
+
+** General Settings
+
+All files of type =.org= or =.org_archive= are automatically opened with Org
+mode activated within Emacs.
+A lot of helpful packages are contributed to the Org mode source. To ensure that
+they are installed by Cortex, Org mode is retrieved from the =orgmode.org/elpa=
+repository.
+The indicator for a collapsed heading with an existing body of text
+(=org-ellipsis=) is changed to =" ⤵"= , which is a more unique and intuitiv then
+the standard ="..."=.
+
+#+BEGIN_SRC emacs-lisp
+(use-package org
+  :mode (("\\.\\(org\\|org_archive\\)$" . org-mode))
+  :ensure org-plus-contrib
+  :config
+  (defvar rrogg/org-config-start-time (current-time) "Time when my org-mode config was started")
+  (message "★→ Org mode")
+  (rrogg/cortex-log-hostspecific "org-version" org-version)
+  (setq org-ellipsis " ⤵"))
+#+END_SRC
+
+Indentation of text below a heading up to the last star (=*=) of the heading is
+disabled. All leading stars are shown.
+This can be turned off on a per file basis by putting =#+STARTUP: indent= at the
+start of the file.
+Only major headings are shown as folded on startup.
+
+#+BEGIN_SRC emacs-lisp
+(use-package org
+  :config
+  (setq org-startup-indented nil)
+  (setq org-startup-folded t))
+#+END_SRC
+
+** Org Mode Config Finished
+
+#+BEGIN_SRC emacs-lisp
+(message "→★ Org mode finished in %.2fs" (float-time (time-subtract (current-time) rrogg/org-config-start-time)))
 #+END_SRC
 
 * Final Spurt
