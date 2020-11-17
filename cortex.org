@@ -732,6 +732,18 @@ session independent history.
   :hook (after-init-hook . savehist-mode))
 #+END_SRC
 
+* Auto Revert Mode
+
+Ensures that (external) changes to the content of a file are updated in the
+buffer of that file.
+
+#+BEGIN_SRC emacs-lisp
+(use-package autorevert
+  :config
+  (setq auto-revert-verbose t)
+  :hook (after-init-hook . global-auto-revert-mode))
+#+END_SRC
+
 * Org Mode
 
 Org mode is right at the core of Cortex. It's the glue which connects task
