@@ -765,13 +765,141 @@ disabled. All leading stars are shown.
 This can be turned off on a per file basis by putting =#+STARTUP: indent= at the
 start of the file.
 Only major headings are shown as folded on startup.
+Start a new line after a heading at the beginning of the line, no indentation.
 
 #+BEGIN_SRC emacs-lisp
 (use-package org
   :config
   (setq org-startup-indented nil)
-  (setq org-startup-folded t))
+  (setq org-startup-folded t)
+  (setq org-adapt-indentation nil))
 #+END_SRC
+
+** Tasks and States
+
+#+BEGIN_SRC emacs-lisp
+(use-package org
+  :config
+  (setq org-todo-keywords
+        '((sequence "NEXT(n)" "WAITING(w)" "CALL(c)" "VISIT(v)" "TRAVEL(t)" "PLANNING(p)" "STARTED(s)" "HOLD(h)" "|" "DONE(d)" "CANCELLED(C)" "NOPART(N)")))
+  (setq org-use-fast-todo-selection t)
+  (setq org-treat-S-cursor-todo-selection-as-state-change nil))
+#+END_SRC
+
+*** Tasks
+
+A task is the basic form of a thing that can be done.
+It can have unique states which are covered below:
+
+- =NEXT= tasks are things that I can work on right now; they are not blocked by anything and can be
+  picked up right away.
+- =WAITING= tasks are things that are waiting on the completion of other tasks,
+  be it my own or external.
+- =DONE= tasks that are complete and ready for archiving.
+- =CANCELLED= tasks are aborted and won't be completed.
+
+*** Projects
+
+A grouping of tasks towards a certain goal is a project; write an Emacs
+configuration, raise a family, build a new shelve for the basement.
+The heading under which all those tasks can be grouped, is representative for
+the project and can have following states:
+
+- =PLANNING= A project that is still brainstormed, not fully flashed
+  out. Sometimes it exists only in the form of a few ideas. No actual work has
+  been done in order to progress towards a goal.
+- =STARTED= Projects that have been worked on.
+- =HOLD= Projects that are on hold.
+- =DONE= Projects that reached the defined goal. There might be projects which
+  naturally can't reach that state.
+- =CANCELLED= Projects that are abandoned and won't be completed.
+
+*** Calls
+
+I collect phone calls and conference calls ("meetings") under this
+keyword. Calls can be spontaneous or scheduled.
+
+- =CALL= Calls that are scheduled or happened adhoc.
+- =DONE= Calls that happened and I participated in.
+- =CANCELLED= Cancelled calls that are not moved.
+- =NOPART= Calls that I did not participate in.
+
+*** Visits
+
+Physical meetings are assigned with this keyword. A visit usually requires me to
+change my location, because they are not virtual meetings. Visits can also be
+events like concerts, trade shows. Visits have the same states as the very
+similar keyword calls.
+
+- =VISIT= Visits that are scheduled.
+- =DONE= Visits that happened and I participated in.
+- =CANCELLED= Cancelled visits that are not moved.
+- =NOPART= Visits that I did not participate in.
+
+*** Travels
+
+Traveling from one place to another by bike, car, train, plane, boat or even by
+walking is marked with this keyword.
+
+- =TRAVEL= A block of time for getting from A to B.
+- =DONE= That trip has been completed.
+- =CANCELLED= The trip has been cancelled.
+
+** Capture New Items
+
+Getting information into Org mode has to be fast and easy. A convenient way to
+create items is to use =org-capture=.
+Called by pressing =C-c c=, =org-capture= shows a menu from which a template
+specifically tailored to the information to be entered can be selected.
+Selecting a single destination for those captured items is sometimes quite hard,
+especially for tasks, which can belong to different contexts like projects, work
+related things or private activities. Choosing the final destination for a
+captured item during the capture process most often slows the process down to
+much. I want to get information out of my head into the system fast, so I can
+move on and deal with other things. Therefore all captures shall be collected
+at a single place by default. The items in there get refiled in another
+process independent from the capture process. This place saved in the
+=org-default-notes-file= variable, which points to my =refile.org= file.
+
+#+BEGIN_SRC emacs-lisp
+(use-package org
+  :config
+  (setq org-directory "~/share/org/")
+  (setq org-default-notes-file (concat org-directory "refile.org"))
+  :bind ("C-c c" . org-capture))
+#+END_SRC
+
+*** Template: Tasks
+
+The default task tracking template will stick the item into =refile= with the
+=NEXT= state. The task state can be changed if that isn't accurate, but for most
+things that are going to be captured it is fine using this.
+
+#+BEGIN_SRC emacs-lisp
+(setq rrogg/capture-template-task "* NEXT %?
+:LOGBOOK:
+:CREATED: %U
+:END:
+%a
+
+
+")
+#+END_SRC
+
+*** Calling Capture Templates
+
+The templates created earlier can be selected by invoking =C-c c= followed by
+the letter designated for a certain template (e.g. =C-c c c= for capturing
+contact information).
+After the capture process is completed for an item, a unique ID is created and
+attached to it.
+
+ #+BEGIN_SRC emacs-lisp
+ (use-package org
+   :config
+   (setq org-capture-templates `(("t" "Task" entry (file org-default-notes-file)
+                                  ,rrogg/capture-template-task))))
+ #+END_SRC
 
 ** Org Mode Config Finished
 
