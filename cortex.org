@@ -787,6 +787,32 @@ Start a new line after a heading at the beginning of the line, no indentation.
   (setq org-adapt-indentation nil))
 #+END_SRC
 
+** Clearly Identifiable Org Headings
+
+In order to make a link to an org heading independent from the location of that
+heading, =org-id= takes care of creating an unique identifier for a heading, if
+a link to it gets stored (=org-store-link=) and there is no ID present for it.
+Having point anywhere on the body of an org heading, invoking =C-c l= will do
+the above. =C-c C-l= can be invoked to insert a link to an org entry.
+
+There is an issue with an niche case: If =org-store-link= is called from a
+fresh Emacs session, it won't create an =:ID:= property when point is on a
+heading without one. Invoking =(featurep 'org-id)= returns nil, so org-id is not
+started. This might be caused by =use-package=. The =org-id= module is only
+loaded if one of its commands is called. =org-store-link= only checks if
+=org-id-link-to-org-use-id= is non-nil, but it won't see it because it has not
+been loaded yet. One could solve this issue by adding a =(require 'org-id)= to
+the source block below. This is annoying, so I'll go with the ugly fix.
+
+#+BEGIN_SRC emacs-lisp
+(use-package org
+  :config
+  (require 'org-id)
+  (setq org-id-method 'uuid)
+  (setq org-id-link-to-org-use-id 'create-if-interactive-and-no-custom-id)
+  :bind ("C-c l" . org-store-link))
+#+END_SRC
+
 ** Tasks and States
 
 #+BEGIN_SRC emacs-lisp
@@ -876,7 +902,7 @@ process independent from the capture process. This place saved in the
 #+BEGIN_SRC emacs-lisp
 (use-package org
   :config
-  (setq org-directory "~/share/org/")
+  (setq org-directory "~/org/")
   (setq org-default-notes-file (concat org-directory "refile.org"))
   :bind ("C-c c" . org-capture))
 #+END_SRC
@@ -886,6 +912,10 @@ process independent from the capture process. This place saved in the
 The default task tracking template will stick the item into =refile= with the
 =NEXT= state. The task state can be changed if that isn't accurate, but for most
 things that are going to be captured it is fine using this.
+A link to the headline from which =org-capture= was called from, is stored via
+=%a=. If that heading doesn't have a ID yet, it is advised to call =C-c l=
+(=org-store-link=) first. This will prevent fragile links by using =org-id=
+based links.
 
 #+BEGIN_SRC emacs-lisp
 (setq rrogg/capture-template-task "* NEXT %?
@@ -910,8 +940,9 @@ attached to it.
  (use-package org
    :config
    (setq org-capture-templates `(("t" "Task" entry (file org-default-notes-file)
-                                  ,rrogg/capture-template-task))))
- #+END_SRC
+                                  ,rrogg/capture-template-task)))
+  :hook (org-capture-prepare-finalize-hook . org-id-get-create))
+#+END_SRC
 
 ** Org Mode Config Finished
 
