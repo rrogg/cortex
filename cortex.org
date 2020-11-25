@@ -8,6 +8,7 @@ takes to load Cortex, someone has to blow the whistle and start the stopwatch.
 
 #+BEGIN_SRC emacs-lisp
 (defvar rrogg/cortex-start-time (current-time) "Time when Cortex was started")
+(message "\n★→ Cortex")
 #+END_SRC
 
 The start time is also used in logs. The format of the time string is different
@@ -903,7 +904,8 @@ process independent from the capture process. This place saved in the
 (use-package org
   :config
   (setq org-directory "~/org/")
-  (setq org-default-notes-file (concat org-directory "refile.org"))
+  (setq org-default-refile-file (concat org-directory "refile.org"))
+  (setq org-default-notes-file (concat org-directory "notes.org"))
   :bind ("C-c c" . org-capture))
 #+END_SRC
 
@@ -928,6 +930,27 @@ based links.
 ")
 #+END_SRC
 
+*** Template: Notes
+
+Notes come in the form of ideas, small snippets of code with a short
+documentation, bits of information worth to be remembered and
+learnings. Combined, those can be reforged into an engineers workbook, serve as
+basis for researching a given topic further and other things.
+I still have to explore the direction I want to go with this. Something like a
+Zettelkasten or a recreation of Roam Research seems very interesting. In the end
+it all comes down to how quick information can be pulled out of the system.
+For a start, this right here is about getting information into it.
+
+#+BEGIN_SRC emacs-lisp
+(setq rrogg/capture-template-note "* %?
+:LOGBOOK:
+:CREATED: %U
+:END:
+
+
+")
+#+END_SRC
+
 *** Calling Capture Templates
 
 The templates created earlier can be selected by invoking =C-c c= followed by
@@ -939,8 +962,10 @@ attached to it.
  #+BEGIN_SRC emacs-lisp
  (use-package org
    :config
-   (setq org-capture-templates `(("t" "Task" entry (file org-default-notes-file)
-                                  ,rrogg/capture-template-task)))
+   (setq org-capture-templates `(("t" "Task" entry (file org-default-refile-file)
+                                  ,rrogg/capture-template-task)
+                                 ("n" "Note" entry (file org-default-notes-file)
+                                  ,rrogg/capture-template-note)))
   :hook (org-capture-prepare-finalize-hook . org-id-get-create))
 #+END_SRC
 
@@ -958,5 +983,5 @@ List missing binaries needed for certain functionality of Cortex.
 
 #+BEGIN_SRC emacs-lisp
 (message "→★ Finished loading Cortex in %.2fs" (float-time (time-subtract (current-time) rrogg/cortex-start-time)))
-(message "»»» Binaries not found in checks above: %s" rrogg/binary-not-found-list)
+(message "»»» Binaries not found in checks above: %s\n" rrogg/binary-not-found-list)
 #+END_SRC
