@@ -745,6 +745,44 @@ buffer of that file.
   :hook (after-init-hook . global-auto-revert-mode))
 #+END_SRC
 
+* Completion
+
+** Minibuffer
+This section configures the the minibuffer and how completion will be done when
+in it.
+
+Completions in the minibuffer ignore case of candidates.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb-ref completion-ignore-case
+(setq completion-ignore-case t)
+(setq read-file-name-completion-ignore-case t)
+(setq read-buffer-completion-ignore-case t)
+#+END_SRC
+
+Display completions sorted vertically in columns (in alphabetical order) in the
+*Completions* buffer.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb-ref completion-buffer-format
+(setq completions-format 'vertical)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :noweb yes
+(use-package minibuffer
+  :config
+  <<completion-ignore-case>>
+  <<completion-buffer-format>>)
+#+END_SRC
+
+** Visualisation of Completion Candidates - Icomplete
+
+Let the built-in =Icomplete= handle the visualisation of completion candidates.
+
+#+BEGIN_SRC emacs-lisp
+(use-package icomplete
+  :config
+  (icomplete-mode t))
+#+END_SRC
+
 * Org Mode
 
 Org mode is right at the core of Cortex. It's the glue which connects task
