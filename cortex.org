@@ -783,6 +783,33 @@ Let the built-in =Icomplete= handle the visualisation of completion candidates.
   (icomplete-mode t))
 #+END_SRC
 
+* Localize the Calendar
+
+The agenda is also used as a calendar. Information about German holidays are
+featured there, making it easy to spot when Easter will be next year.
+
+The list =calendar-holidays= contains all days of the year which I don't have be
+at work. To make them show up in the agenda, the line =%%(org-calendar-holiday)=
+has to appear somewhere below a heading in an org file included in the
+=org-agenda-files=.
+
+#+BEGIN_SRC emacs-lisp
+(use-package holidays
+  :init
+  (setq calendar-holidays
+          '((holiday-fixed 1 1 "Neujahr")
+            (holiday-fixed 5 1 "Tag der Arbeit")
+            (holiday-fixed 10 3 "Tag der Deutschen Einheit")
+            (holiday-fixed 12 25 "1. Weihnachtstag")
+            (holiday-fixed 12 26 "2. Weihnachtstag")
+            (holiday-easter-etc  -2 "Karfreitag")
+            (holiday-easter-etc  +1 "Ostermontag")
+            (holiday-easter-etc +39 "Christi Himmelfahrt")
+            (holiday-easter-etc +50 "Pfingstmontag")
+            (holiday-easter-etc +60 "Fronleichnam")
+            (holiday-fixed 11 1 "Allerheiligen"))))
+#+END_SRC
+
 * Org Mode
 
 Org mode is right at the core of Cortex. It's the glue which connects task
