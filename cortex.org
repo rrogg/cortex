@@ -1031,6 +1031,25 @@ For a start, this right here is about getting information into it.
 ")
 #+END_SRC
 
+*** Template: Contacts
+
+Essential contact information is first name, family name, birthday and e-mail
+address. Birthday and e-mail address have to be treated specially, because those
+properties break the org-agenda if not present or in the wrong format.
+
+#+BEGIN_SRC emacs-lisp
+(setq rrogg/capture-template-contact "* %?
+:PROPERTIES:
+:BIRTHDAY: 
+:EMAIL: 
+:END:
+:LOGBOOK:
+:CREATED: %U
+:END:
+
+")
+#+END_SRC
+
 *** Calling Capture Templates
 
 The templates created earlier can be selected by invoking =C-c c= followed by
@@ -1046,9 +1065,31 @@ attached to it.
                                   ,rrogg/capture-template-task)
                                  ("c" "Call" entry (file org-default-refile-file)
                                   ,rrogg/capture-template-call)
+                                 ("C" "Contact" entry (file org-default-refile-file)
+                                  ,rrogg/capture-template-contact)
                                  ("n" "Note" entry (file org-default-notes-file)
                                   ,rrogg/capture-template-note)))
   :hook (org-capture-prepare-finalize-hook . org-id-get-create))
+#+END_SRC
+
+** Contacts
+
+=org-contacts= takes care of managing contact information of family, friends,
+co-workers, business contacts, venues, stores etc.
+All this information gets stored in one org file, which has to be known to
+org-contacts.
+In order to include birthdays of contacts to the agenda, this file
+also has to be included in the =org-agenda-files=. Birthdays will show up, if
+the following line appears somewhere in an agenda file:
+
+#+BEGIN_EXAMPLE
+%%(org-contacts-anniversaries)
+#+END_EXAMPLE
+
+#+BEGIN_SRC emacs-lisp
+(use-package org-contacts
+  :config
+  (setq org-contacts-files '("~/org/contacts.org")))
 #+END_SRC
 
 ** Agenda
