@@ -968,6 +968,21 @@ based links.
 ")
 #+END_SRC
 
+*** Template: Calls
+
+Calls have a active time stamp in their heading, which will be recognized by
+=org-agenda=.
+
+#+BEGIN_SRC emacs-lisp
+(setq rrogg/capture-template-call "* CALL %(org-time-stamp nil) %?
+:LOGBOOK:
+:CREATED: %U
+:END:
+
+
+")
+#+END_SRC
+
 *** Template: Notes
 
 Notes come in the form of ideas, small snippets of code with a short
@@ -1002,9 +1017,28 @@ attached to it.
    :config
    (setq org-capture-templates `(("t" "Task" entry (file org-default-refile-file)
                                   ,rrogg/capture-template-task)
+                                 ("c" "Call" entry (file org-default-refile-file)
+                                  ,rrogg/capture-template-call)
                                  ("n" "Note" entry (file org-default-notes-file)
                                   ,rrogg/capture-template-note)))
   :hook (org-capture-prepare-finalize-hook . org-id-get-create))
+#+END_SRC
+
+** Agenda
+
+The agenda is the central dashboard showing an overview of tasks. That my be all
+my work related tasks for a day, my meeting appointments for the next week or
+the tasks belonging to a private project. Invoking =C-c a= anywhere in Emacs
+will show the main menu of the agenda feature of Org mode.
+
+All org files specified in the variable =org-agenda-files= contribute to the
+agenda.
+
+#+BEGIN_SRC emacs-lisp
+(use-package org
+  :config
+  (setq org-agenda-files '("~/org"))
+  :bind ("C-c a" . org-agenda))
 #+END_SRC
 
 ** Org Mode Config Finished
