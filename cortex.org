@@ -454,7 +454,7 @@ sunset and sundown, which might be explored further in the future.
           (rrogg/modus-vivendi))
       (disable-theme 'modus-vivendi)
       (rrogg/modus-operandi)))
-  :hook (after-init-hook . rrogg/modus-operandi)
+  :hook (after-init-hook . rrogg/modus-vivendi)
   :bind ("<f5>" . rrogg/themes-toggle))
 #+END_SRC
 
