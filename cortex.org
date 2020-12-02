@@ -1072,6 +1072,28 @@ attached to it.
   :hook (org-capture-prepare-finalize-hook . org-id-get-create))
 #+END_SRC
 
+** Organize Captured Items
+
+All captured items get created in the =org-default-notes-file= and are refiled
+from there.
+Invoking =C-c C-w= starts the refile process. Possible targets are all
+=org-agenda-files= with headings up to 9 levels deep.
+The refile process is allowed to create parent tasks with confirmation.
+A time stamp is created on completion of the refile process for an item and
+logged into the item's logbook drawer.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package org
+    :config
+    (setq org-refile-targets '((nil :maxlevel . 9)
+			       (org-agenda-files :maxlevel . 9)))
+    (setq org-refile-use-outline-path 'file)
+    ;; (setq org-outline-path-complete-in-steps nil)
+    (setq org-refile-allow-creating-parent-nodes '(confirm))
+    (setq org-log-refile 'time)
+    (setq org-log-into-drawer t))
+#+END_SRC
+
 ** Contacts
 
 =org-contacts= takes care of managing contact information of family, friends,
