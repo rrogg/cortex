@@ -839,16 +839,16 @@ the standard ="..."=.
 #+END_SRC
 
 Indentation of text below a heading up to the last star (=*=) of the heading is
-disabled. All leading stars are shown.
-This can be turned off on a per file basis by putting =#+STARTUP: indent= at the
-start of the file.
+enabled. All leading stars are hidden.
+This can be turned off on a per file basis by putting =#+STARTUP: noindent= at
+the start of the file.
 Only major headings are shown as folded on startup.
 Start a new line after a heading at the beginning of the line, no indentation.
 
 #+BEGIN_SRC emacs-lisp
 (use-package org
   :config
-  (setq org-startup-indented nil)
+  (setq org-startup-indented t)
   (setq org-startup-folded t)
   (setq org-adapt-indentation nil))
 #+END_SRC
