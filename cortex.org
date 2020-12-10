@@ -746,10 +746,34 @@ buffer of that file.
 #+END_SRC
 
 * Completion
+** Orderless Completion Style
+:PROPERTIES:
+:ID:       51901de4-e349-4de2-9b5e-0be7da29f1ef
+:END:
+
+| [2020-12-10] | Initial setup |
+
+The orderless completion style allows selecting candidates using strings that
+appear somewhere in it. This allows to select the file =example -- tag.org= by
+typing =tag= in the minibuffer. If there are multiple candidates left, =tag ex=
+will select the file I want. This is helpful if I'm not completely sure what the
+candidate is named exactly.
+
+
+#+BEGIN_SRC emacs-lisp
+(use-package orderless
+  :ensure t)
+#+END_SRC
 
 ** Minibuffer
 This section configures the the minibuffer and how completion will be done when
 in it.
+
+Use the [[id:51901de4-e349-4de2-9b5e-0be7da29f1ef][orderless]] and partial completion styles.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb-ref completion-style
+(setq completion-styles '(orderless partial-completion))
+#+END_SRC
 
 Completions in the minibuffer ignore case of candidates.
 
@@ -769,6 +793,7 @@ Display completions sorted vertically in columns (in alphabetical order) in the
 #+BEGIN_SRC emacs-lisp :noweb yes
 (use-package minibuffer
   :config
+  <<completion-style>>
   <<completion-ignore-case>>
   <<completion-buffer-format>>)
 #+END_SRC
@@ -1127,7 +1152,7 @@ agenda.
 #+BEGIN_SRC emacs-lisp
 (use-package org
   :config
-  (setq org-agenda-files '("~/org"))
+  (setq org-agenda-files '("~/org/refile.org" "~/org/work.org" "~/org/private.org"))
   :bind ("C-c a" . org-agenda))
 #+END_SRC
 
