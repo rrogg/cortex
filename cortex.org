@@ -895,12 +895,15 @@ loaded if one of its commands is called. =org-store-link= only checks if
 been loaded yet. One could solve this issue by adding a =(require 'org-id)= to
 the source block below. This is annoying, so I'll go with the ugly fix.
 
+When point is on a link, =RET= will follow it.
+
 #+BEGIN_SRC emacs-lisp
 (use-package org
   :config
   (require 'org-id)
   (setq org-id-method 'uuid)
   (setq org-id-link-to-org-use-id 'create-if-interactive-and-no-custom-id)
+  (setq org-return-follows-link t)
   :bind ("C-c l" . org-store-link))
 #+END_SRC
 
