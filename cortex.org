@@ -384,17 +384,10 @@ representation of the latest commit to the master branch of the themes repo and
 should be the latest version available.
 
 =Modus Operandi= is the light variant.
-
-#+BEGIN_SRC emacs-lisp
-(use-package modus-operandi-theme
-  :ensure t
-  :pin melpa)
-#+END_SRC
-
 =Modus Vivendi= is the dark variant.
 
 #+BEGIN_SRC emacs-lisp
-(use-package modus-vivendi-theme
+(use-package modus-themes
   :ensure t
   :pin melpa)
 #+END_SRC
