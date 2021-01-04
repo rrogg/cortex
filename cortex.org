@@ -809,6 +809,25 @@ Let the built-in =Icomplete= handle the visualisation of completion candidates.
   (icomplete-mode t))
 #+END_SRC
 
+* PDF
+
+Rendering PDF documents inside of Emacs enables a direct comparison of the
+source material of an export and the result of the export done by Emacs (or more
+specifically Org mode).
+The package =pdf-tools= comes with many advantages over the built in docview.
+It is based on the poppler package for Linux which will be installed by the
+Emacs-package from the following source block.
+The PDF document is scaled to fit the buffer it will be displayed in. Adjusting
+the scaling can easily be done via =-= and =+=.
+
+#+BEGIN_SRC emacs-lisp
+(use-package pdf-tools
+  :ensure t
+  :config
+  (pdf-tools-install)
+  (setq-default pdf-view-display-size 'fit-page))
+#+END_SRC
+
 * Calendar
 
 The agenda is also used as a calendar.
