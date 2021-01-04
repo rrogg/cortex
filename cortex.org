@@ -1302,6 +1302,328 @@ the following line appears somewhere in an agenda file:
   (setq org-contacts-files '("~/org/contacts.org")))
 #+END_SRC
 
+*** Additional Anniversaries
+
+To add support for other anniversaries like wedding days, date of death or other
+special dates belonging to a contact or group while displaying those dates in a
+individual category on the agenda, some of the code in =org-contacts.el= has to
+be copied and slightly modified.
+
+Those dates can be included into the agenda by adding the following to an org
+agenda file:
+
+#+BEGIN_EXAMPLE
+%%(rrogg/org-contacts-wedding-anniversaries)
+#+END_EXAMPLE
+
+This way org-contacts also supports:
+
+**** Church Wedding Dates
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/org-contacts-wedding-anniversaries (&optional field format)
+  "Compute FIELD wedding-anniversary for each contact, returning FORMAT.
+Default FIELD value is \"WEDDINGDAY\".
+
+Format is a string matching the following format specification:
+
+  %h - Heading name
+  %l - Link to the heading
+  %y - Number of year
+  %Y - Number of year (ordinal)"
+  (let ((calendar-date-style 'american)
+        (entry ""))
+    (unless format (setq format rrogg/org-contacts-weddingday-format))
+    (cl-loop for contact in (org-contacts-filter)
+	     for anniv = (let ((anniv (cdr (assoc-string
+					    (or field rrogg/org-contacts-weddingday-property)
+					    (nth 2 contact)))))
+			   (when anniv
+			     (calendar-gregorian-from-absolute
+			      (org-time-string-to-absolute anniv))))
+	     ;; Use `diary-anniversary' to compute anniversary.
+	     if (and anniv (apply 'diary-anniversary anniv))
+	     collect (format-spec format
+				  `((?l . ,(org-with-point-at (cadr contact) (org-store-link nil)))
+				    (?h . ,(car contact))
+				    (?y . ,(- (calendar-extract-year date)
+					      (calendar-extract-year anniv)))
+				    (?Y . ,(let ((years (- (calendar-extract-year date)
+							   (calendar-extract-year anniv))))
+					     (format "%d%s" years (diary-ordinal-suffix years)))))))))
+
+(defcustom rrogg/org-contacts-weddingday-property "WEDDINGDAY"
+  "Name of the property for contact weddingday date."
+  :type 'string
+  :group 'org-contacts)
+
+(defcustom rrogg/org-contacts-weddingday-format "Wedding Anniv.: %l (%Y)"
+  "Format of the anniversary agenda entry.
+The following replacements are available:
+
+  %h - Heading name
+  %l - Link to the heading
+  %y - Number of year
+  %Y - Number of year (ordinal)"
+  :type 'string
+  :group 'org-contacts)
+#+END_SRC
+
+**** Civil Wedding Dates
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/org-contacts-civil-wedding-anniversaries (&optional field format)
+  "Compute FIELD civil-wedding-anniversary for each contact, returning FORMAT.
+Default FIELD value is \"CIVILWEDDINGDAY\".
+
+Format is a string matching the following format specification:
+
+  %h - Heading name
+  %l - Link to the heading
+  %y - Number of year
+  %Y - Number of year (ordinal)"
+  (let ((calendar-date-style 'american)
+        (entry ""))
+    (unless format (setq format rrogg/org-contacts-civil-weddingday-format))
+    (cl-loop for contact in (org-contacts-filter)
+	     for anniv = (let ((anniv (cdr (assoc-string
+					    (or field rrogg/org-contacts-civil-weddingday-property)
+					    (nth 2 contact)))))
+			   (when anniv
+			     (calendar-gregorian-from-absolute
+			      (org-time-string-to-absolute anniv))))
+	     ;; Use `diary-anniversary' to compute anniversary.
+	     if (and anniv (apply 'diary-anniversary anniv))
+	     collect (format-spec format
+				  `((?l . ,(org-with-point-at (cadr contact) (org-store-link nil)))
+				    (?h . ,(car contact))
+				    (?y . ,(- (calendar-extract-year date)
+					      (calendar-extract-year anniv)))
+				    (?Y . ,(let ((years (- (calendar-extract-year date)
+							   (calendar-extract-year anniv))))
+					     (format "%d%s" years (diary-ordinal-suffix years)))))))))
+
+(defcustom rrogg/org-contacts-civil-weddingday-property "CIVILWEDDINGDAY"
+  "Name of the property for contact civil weddingday date."
+  :type 'string
+  :group 'org-contacts)
+
+(defcustom rrogg/org-contacts-civil-weddingday-format "Civil Wedding Anniv.: %l (%Y)"
+  "Format of the anniversary agenda entry.
+The following replacements are available:
+
+  %h - Heading name
+  %l - Link to the heading
+  %y - Number of year
+  %Y - Number of year (ordinal)"
+  :type 'string
+  :group 'org-contacts)
+#+END_SRC
+
+**** Date Since When Contact is Known
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/org-contacts-first-met-anniversaries (&optional field format)
+  "Compute FIELD first-met-anniversary for each contact, returning FORMAT.
+Default FIELD value is \"FIRSTMET\".
+
+Format is a string matching the following format specification:
+
+  %h - Heading name
+  %l - Link to the heading
+  %y - Number of year
+  %Y - Number of year (ordinal)"
+  (let ((calendar-date-style 'american)
+        (entry ""))
+    (unless format (setq format rrogg/org-contacts-first-met-format))
+    (cl-loop for contact in (org-contacts-filter)
+	     for anniv = (let ((anniv (cdr (assoc-string
+					    (or field rrogg/org-contacts-first-met-property)
+					    (nth 2 contact)))))
+			   (when anniv
+			     (calendar-gregorian-from-absolute
+			      (org-time-string-to-absolute anniv))))
+	     ;; Use `diary-anniversary' to compute anniversary.
+	     if (and anniv (apply 'diary-anniversary anniv))
+	     collect (format-spec format
+				  `((?l . ,(org-with-point-at (cadr contact) (org-store-link nil)))
+				    (?h . ,(car contact))
+				    (?y . ,(- (calendar-extract-year date)
+					      (calendar-extract-year anniv)))
+				    (?Y . ,(let ((years (- (calendar-extract-year date)
+							   (calendar-extract-year anniv))))
+					     (format "%d%s" years (diary-ordinal-suffix years)))))))))
+
+(defcustom rrogg/org-contacts-first-met-property "FIRSTMET"
+  "Name of the property for contact firstmet date."
+  :type 'string
+  :group 'org-contacts)
+
+(defcustom rrogg/org-contacts-first-met-format "First Met Anniv.: %l (%Y)"
+  "Format of the anniversary agenda entry.
+The following replacements are available:
+
+  %h - Heading name
+  %l - Link to the heading
+  %y - Number of year
+  %Y - Number of year (ordinal)"
+  :type 'string
+  :group 'org-contacts)
+#+END_SRC
+
+**** Date the Relationship With That Contact Started
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/org-contacts-relationshipday-anniversaries (&optional field format)
+  "Compute FIELD relationshipday-anniversary for each contact, returning FORMAT.
+Default FIELD value is \"RELATIONSHIPDAY\".
+
+Format is a string matching the following format specification:
+
+  %h - Heading name
+  %l - Link to the heading
+  %y - Number of year
+  %Y - Number of year (ordinal)"
+  (let ((calendar-date-style 'american)
+        (entry ""))
+    (unless format (setq format rrogg/org-contacts-relationshipday-format))
+    (cl-loop for contact in (org-contacts-filter)
+	     for anniv = (let ((anniv (cdr (assoc-string
+					    (or field rrogg/org-contacts-relationshipday-property)
+					    (nth 2 contact)))))
+			   (when anniv
+			     (calendar-gregorian-from-absolute
+			      (org-time-string-to-absolute anniv))))
+	     ;; Use `diary-anniversary' to compute anniversary.
+	     if (and anniv (apply 'diary-anniversary anniv))
+	     collect (format-spec format
+				  `((?l . ,(org-with-point-at (cadr contact) (org-store-link nil)))
+				    (?h . ,(car contact))
+				    (?y . ,(- (calendar-extract-year date)
+					      (calendar-extract-year anniv)))
+				    (?Y . ,(let ((years (- (calendar-extract-year date)
+							   (calendar-extract-year anniv))))
+					     (format "%d%s" years (diary-ordinal-suffix years)))))))))
+
+(defcustom rrogg/org-contacts-relationshipday-property "RELATIONSHIPDAY"
+  "Name of the property for contact realtionshipday date."
+  :type 'string
+  :group 'org-contacts)
+
+(defcustom rrogg/org-contacts-relationshipday-format "Realationship Anniv.: %l (%Y)"
+  "Format of the anniversary agenda entry.
+The following replacements are available:
+
+  %h - Heading name
+  %l - Link to the heading
+  %y - Number of year
+  %Y - Number of year (ordinal)"
+  :type 'string
+  :group 'org-contacts)
+#+END_SRC
+
+**** Date of Proposal
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/org-contacts-proposalday-anniversaries (&optional field format)
+  "Compute FIELD proposalday-anniversary for each contact, returning FORMAT.
+Default FIELD value is \"PROPOSALDAY\".
+
+Format is a string matching the following format specification:
+
+  %h - Heading name
+  %l - Link to the heading
+  %y - Number of year
+  %Y - Number of year (ordinal)"
+  (let ((calendar-date-style 'american)
+        (entry ""))
+    (unless format (setq format rrogg/org-contacts-proposalday-format))
+    (cl-loop for contact in (org-contacts-filter)
+	     for anniv = (let ((anniv (cdr (assoc-string
+					    (or field rrogg/org-contacts-proposalday-property)
+					    (nth 2 contact)))))
+			   (when anniv
+			     (calendar-gregorian-from-absolute
+			      (org-time-string-to-absolute anniv))))
+	     ;; Use `diary-anniversary' to compute anniversary.
+	     if (and anniv (apply 'diary-anniversary anniv))
+	     collect (format-spec format
+				  `((?l . ,(org-with-point-at (cadr contact) (org-store-link nil)))
+				    (?h . ,(car contact))
+				    (?y . ,(- (calendar-extract-year date)
+					      (calendar-extract-year anniv)))
+				    (?Y . ,(let ((years (- (calendar-extract-year date)
+							   (calendar-extract-year anniv))))
+					     (format "%d%s" years (diary-ordinal-suffix years)))))))))
+
+(defcustom rrogg/org-contacts-proposalday-property "PROPOSALDAY"
+  "Name of the property for contact proposalday date."
+  :type 'string
+  :group 'org-contacts)
+
+(defcustom rrogg/org-contacts-proposalday-format "Proposal Anniv.: %l (%Y)"
+  "Format of the anniversary agenda entry.
+The following replacements are available:
+
+  %h - Heading name
+  %l - Link to the heading
+  %y - Number of year
+  %Y - Number of year (ordinal)"
+  :type 'string
+  :group 'org-contacts)
+#+END_SRC
+
+**** Date the Contact Passed Away
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/org-contacts-dayofdeath-anniversaries (&optional field format)
+  "Compute FIELD dayofdeath-anniversary for each contact, returning FORMAT.
+Default FIELD value is \"DAYOFDEATH\".
+
+Format is a string matching the following format specification:
+
+  %h - Heading name
+  %l - Link to the heading
+  %y - Number of year
+  %Y - Number of year (ordinal)"
+  (let ((calendar-date-style 'american)
+        (entry ""))
+    (unless format (setq format rrogg/org-contacts-dayofdeath-format))
+    (cl-loop for contact in (org-contacts-filter)
+	     for anniv = (let ((anniv (cdr (assoc-string
+					    (or field rrogg/org-contacts-dayofdeath-property)
+					    (nth 2 contact)))))
+			   (when anniv
+			     (calendar-gregorian-from-absolute
+			      (org-time-string-to-absolute anniv))))
+	     ;; Use `diary-anniversary' to compute anniversary.
+	     if (and anniv (apply 'diary-anniversary anniv))
+	     collect (format-spec format
+				  `((?l . ,(org-with-point-at (cadr contact) (org-store-link nil)))
+				    (?h . ,(car contact))
+				    (?y . ,(- (calendar-extract-year date)
+					      (calendar-extract-year anniv)))
+				    (?Y . ,(let ((years (- (calendar-extract-year date)
+							   (calendar-extract-year anniv))))
+					     (format "%d%s" years (diary-ordinal-suffix years)))))))))
+
+(defcustom rrogg/org-contacts-dayofdeath-property "DAYOFDEATH"
+  "Name of the property for contact day of death date."
+  :type 'string
+  :group 'org-contacts)
+
+(defcustom rrogg/org-contacts-dayofdeath-format "Anniv. of Death: %l (%Y)"
+  "Format of the anniversary agenda entry.
+The following replacements are available:
+
+  %h - Heading name
+  %l - Link to the heading
+  %y - Number of year
+  %Y - Number of year (ordinal)"
+  :type 'string
+  :group 'org-contacts)
+#+END_SRC
+
 ** Agenda
 
 The agenda is the central dashboard showing an overview of tasks. That my be all
