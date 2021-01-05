@@ -1653,6 +1653,79 @@ agenda.
   :bind ("C-c a" . org-agenda))
 #+END_SRC
 
+*** Agenda Views
+
+How the agenda is rendered is of course customizable.
+Agenda views can be saved to the =org-agenda-custom-commands= list and will be
+presented as an option when calling the agenda dispatcher with =C-c a=.
+
+#+BEGIN_SRC emacs-lisp :noweb yes
+(use-package org
+  :config
+  (setq org-agenda-custom-commands '())
+  (add-to-list 'org-agenda-custom-commands
+          <<my-agenda>>))
+#+END_SRC
+
+**** My Agenda
+
+The main agenda is a composition of multiple agenda commands. The list syntax
+for a composite agenda buffer is
+=(key desc (cmd1 cmd2 ...) general-settings-for-whole-set files)=.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb yes :noweb-ref my-agenda
+'(<<my-agenda-key-desc>>
+  (<<my-agenda-cmd-agenda>>
+   <<my-agenda-cmd-refile>>))
+#+END_SRC
+
+The agenda can be called by pressing =key= when on the agenda dispatcher. The
+complete key command is =C-c a SPC=.
+A description of the view is passed to the agenda dispatcher via =desc=.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-agenda-key-desc
+" " "My Agenda"
+#+END_SRC
+
+***** Daily/Weekly Agenda
+
+The daily/weekly agenda is at the top of the buffer.
+It is spawned by a non-matching agenda command with syntax =(cmd "" settings)=.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-agenda-cmd-agenda
+(agenda "")
+#+END_SRC
+
+***** Headings to Refile
+
+Headings that have been captured but still need to be refiled, appear below the
+daily/weekly agenda.
+There is an agenda command =tags= that matches tags/properties/todos in all
+agenda files. General syntax for matching agenda commands is =(cmd "match"
+settings files)=.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb yes :noweb-ref my-agenda-cmd-refile
+(<<my-agenda-cmd-refile-cmd-match>>
+      <<my-agenda-cmd-refile-settings>>)
+#+END_SRC
+
+All of the headings to be shown here have a tag =:REFILE:= assigned to them, so
+it will search for this tag.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-agenda-cmd-refile-cmd-match
+tags "REFILE"
+#+END_SRC
+
+The way the matching headings are presented can be adjusted using settings.
+The header of the refile section is changed.
+Subtrees of a match are skipped in order to prevent a potentially very long list
+of matches.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-agenda-cmd-refile-settings
+((org-agenda-overriding-header "Headings to Refile")
+ (org-tags-match-list-sublevels nil))
+#+END_SRC
+
 *** Show Small Icons in Agenda View
 
 Some agenda entries belonging to a certain category have a small 16 x 16 pixel
