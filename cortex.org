@@ -1676,7 +1676,8 @@ for a composite agenda buffer is
 #+BEGIN_SRC emacs-lisp :tangle no :noweb yes :noweb-ref my-agenda
 '(<<my-agenda-key-desc>>
   (<<my-agenda-cmd-agenda>>
-   <<my-agenda-cmd-refile>>))
+   <<my-agenda-cmd-refile>>
+   <<my-agenda-cmd-standalone>>))
 #+END_SRC
 
 The agenda can be called by pressing =key= when on the agenda dispatcher. The
@@ -1724,6 +1725,121 @@ of matches.
 #+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-agenda-cmd-refile-settings
 ((org-agenda-overriding-header "Headings to Refile")
  (org-tags-match-list-sublevels nil))
+#+END_SRC
+
+***** Standalone Tasks
+
+Independent tasks, meaning tasks that are not contributing towards a common goal
+within a project, are displayed separately.
+All headings under this section must have a todo-state. Therefore the agenda
+command =tags-todo= is fitting, because it automatically skips non-task
+headings.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb yes :noweb-ref my-agenda-cmd-standalone
+(<<my-agenda-cmd-standalone-cmd-match>>
+      <<my-agenda-cmd-standalone-settings>>)
+#+END_SRC
+
+All tasks are matched against the following todo-states or tags:
+- Skip tasks tagged =:REFILE:= - those are gathered in section =Headings to
+  Refile=.
+- Skip =CANCELLED= tasks - those are gathered elsewhere.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-agenda-cmd-standalone-cmd-match
+tags-todo "-REFILE-CANCELLED"
+#+END_SRC
+
+The remaining candidates to display still contain projects and project tasks.
+Those need to be skipped. A function can be assigned to
+=org-agenda-skip-function= in order to do this step.
+The skip function should return =nil= in case the current match should not be
+skipped. In case the match should be skipped, the return value must be a
+position from which the search for the next match should be continued.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-agenda-cmd-standalone-settings
+((org-agenda-overriding-header "Standalone Tasks")
+ (org-agenda-skip-function 'rrogg/skip-project-tasks))
+#+END_SRC
+
+**** Functions for Agenda Building
+
+***** Skip Functions
+
+These functions are used for skipping headings that have been matched during
+creating of the agenda.
+The expected return values are:
+- =position=: In case of identification of a heading that should be skipped, the
+  position from where to continue is the return value.
+- =nil=: In case of a heading that should not be skipped.
+
+****** Skip Projects and Project Tasks
+
+First of, =save-restriction= saves the current buffer’s restrictions when it is
+entered and restores them when it is exited.
+Then potential narrowing of the buffer gets removed with =widen=.
+A local binding for the variable =end-of-subtree= is created using =let=. This
+binding will only be in effect within the body of the =let= statement.
+The variable =end-of-subtree= holds the position of the end of the subtree
+visited by =org-end-of-subtree=. This is possible to do so because it is
+encapsulated in a =save-excursion= special form. This saves point and current
+buffer, executes =org-end-of-subtree= and restores the previous state of point
+and buffer.
+The body of =let= is a conditional control structure =cond=. The body of the
+first condition successfully is returned. If non succeeds the return value is
+=nil=.
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/skip-project-tasks ()
+  "Skip org-headings that are part of a project.
+If heading should be skipped, return position of end of subtree to continue searching.
+Return nil in case the heading should not be skipped."
+  (save-restriction
+    (widen)
+    (let ((end-of-subtree (save-excursion (org-end-of-subtree t))))
+      (cond
+       ((rrogg/is-project-p)
+        end-of-subtree)))))
+#+END_SRC
+
+***** Identification Functions
+
+The following functions are used to identify what kind of org-heading or task an
+entry is.
+Return value is either =t= or =nil=.
+
+****** Identify Projects
+
+Current buffer's restrictions are saved via =save-restriction= and restored when
+the function is exited.
+Then potential narrowing of the buffer gets removed with =widen=.
+Three local bindings for variables are needed in order to determine if the tasks
+is a project:
+- =end-of-subtree=: Holds the position of the end of the subtree visited by
+  =org-end-of-subtree=.
+- =is-task=: Checks if org-heading has a todo keyword, returns boolean.
+- =has-subtask=: Boolean, default value is =nil=.
+Because this function examines the org-headings coming after the current one,
+point is moved one line forward.
+The following =while= control loop searches for the next org-heading and sets
+the variable =has-subtask= to =t= if the org-heading contains a todo keyword.
+The return value is =t= if both of =is-task= and =has-subtask= are =t=.
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/is-project-p ()
+  "A task with a subtask is a project."
+  (save-restriction
+    (widen)
+    (let ((end-of-subtree (save-excursion (org-end-of-subtree t)))
+          (is-task (member (nth 2 (org-heading-components)) org-todo-keywords-1))
+          (has-subtask))
+      (save-excursion
+        (forward-line 1)
+        (while (and (< (point) end-of-subtree)
+                    (re-search-forward "^\*+ " end-of-subtree t)
+                    (not has-subtask))
+          (when (member (org-get-todo-state) org-todo-keywords-1)
+            (setq has-subtask t))))
+      (and is-task has-subtask))))
 #+END_SRC
 
 *** Show Small Icons in Agenda View
