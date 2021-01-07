@@ -1659,6 +1659,8 @@ How the agenda is rendered is of course customizable.
 Agenda views can be saved to the =org-agenda-custom-commands= list and will be
 presented as an option when calling the agenda dispatcher with =C-c a=.
 
+The agenda setup is drawing heavily from the amazing work of [[http://doc.norang.ca/org-mode.html][Bernt Hansen]].
+
 #+BEGIN_SRC emacs-lisp :noweb yes
 (use-package org
   :config
@@ -1677,7 +1679,12 @@ for a composite agenda buffer is
 '(<<my-agenda-key-desc>>
   (<<my-agenda-cmd-agenda>>
    <<my-agenda-cmd-refile>>
-   <<my-agenda-cmd-standalone>>))
+   <<my-agenda-cmd-stuck-project>>
+   <<my-agenda-cmd-project>>
+   <<my-agenda-cmd-project-next>>
+   <<my-agenda-cmd-standalone>>
+   <<my-agenda-cmd-project-plan>>
+   <<my-agenda-cmd-waiting>>))
 #+END_SRC
 
 The agenda can be called by pressing =key= when on the agenda dispatcher. The
@@ -1727,7 +1734,89 @@ of matches.
  (org-tags-match-list-sublevels nil))
 #+END_SRC
 
+***** Stuck Projects
+:PROPERTIES:
+:ID:       ca4c4ff1-0d86-460d-bd68-ec5f96d549b3
+:END:
+
+A stuck project is one that does not have any subtask (or subproject) that can
+be worked on right now. To unstuck a project, at least one of its tasks has to
+be in a =NEXT= state.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb yes :noweb-ref my-agenda-cmd-stuck-project
+(<<my-agenda-cmd-stuck-project-cmd-match>>
+      <<my-agenda-cmd-stuck-project-settings>>)
+#+END_SRC
+
+Exclude projects that are on hold or cancelled.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-agenda-cmd-stuck-project-cmd-match
+tags-todo "/!-HOLD-CANCELLED"
+#+END_SRC
+
+Projects can't be found with todo-states alone, because I don't have a dedicated
+state for them.
+Therefore the function [[id:8dc94898-0f38-4aee-b1be-db569f3879a3][=rrogg/skip-non-stuck-projects=]] is called, which decides
+which headings to skip for being displayed in this section on the agenda.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-agenda-cmd-stuck-project-settings
+((org-agenda-overriding-header "Stuck Projects")
+ (org-agenda-skip-function 'rrogg/skip-non-stuck-projects))
+#+END_SRC
+
+***** Projects
+
+Projects that can be worked on are listed in this section. Those projects have
+at least one task in =NEXT= state, that is unblocked and can be worked on.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb yes :noweb-ref my-agenda-cmd-project
+(<<my-agenda-cmd-project-cmd-match>>
+      <<my-agenda-cmd-project-settings>>)
+#+END_SRC
+
+Cancelled and on-hold projects are not displayed.
+Also projects still in planning phase are excluded.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-agenda-cmd-project-cmd-match
+tags-todo "/!-HOLD-CANCELLED-PLANNING"
+#+END_SRC
+
+The skip function that identifies projects is [[id:6faa31dc-43a0-447a-88d0-fffbe14a3cb0][=rrogg/skip-non-projects=]].
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-agenda-cmd-project-settings
+((org-agenda-overriding-header "Projects")
+ (org-agenda-skip-function 'rrogg/skip-non-projects))
+#+END_SRC
+
+***** Project Next Tasks
+
+Tasks in =NEXT= state, that move a project towards its goal, are listed in this
+section. If a task is displayed here, it can be worked on right away.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb yes :noweb-ref my-agenda-cmd-project-next
+(<<my-agenda-cmd-project-next-cmd-match>>
+      <<my-agenda-cmd-project-next-settings>>)
+#+END_SRC
+
+Given by the section name, only =NEXT= stated are valid.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-agenda-cmd-project-next-cmd-match
+tags-todo "/!-HOLD-CANCELLED-WAITING"
+#+END_SRC
+
+[[id:b5c5c889-06c7-46b2-a89d-32327610f5a9][Standalone tasks]] are excluded from this section. Those are tasks that are
+independent from a project and have their own section.
+The skip function is [[id:61741020-afa3-43ed-8db2-ba936490c0cd][=rrogg/skip-projects-standalone=]].
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-agenda-cmd-project-next-settings
+((org-agenda-overriding-header "Project Next Tasks")
+ (org-agenda-skip-function 'rrogg/skip-projects-standalone))
+#+END_SRC
+
 ***** Standalone Tasks
+:PROPERTIES:
+:ID:       b5c5c889-06c7-46b2-a89d-32327610f5a9
+:END:
 
 Independent tasks, meaning tasks that are not contributing towards a common goal
 within a project, are displayed separately.
@@ -1744,9 +1833,10 @@ All tasks are matched against the following todo-states or tags:
 - Skip tasks tagged =:REFILE:= - those are gathered in section =Headings to
   Refile=.
 - Skip =CANCELLED= tasks - those are gathered elsewhere.
+- Skip =CALL= tasks - those are only shown in the agenda.
 
 #+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-agenda-cmd-standalone-cmd-match
-tags-todo "-REFILE-CANCELLED"
+tags-todo "-REFILE/!-CANCELLED-CALL"
 #+END_SRC
 
 The remaining candidates to display still contain projects and project tasks.
@@ -1761,6 +1851,59 @@ position from which the search for the next match should be continued.
  (org-agenda-skip-function 'rrogg/skip-project-tasks))
 #+END_SRC
 
+***** Planned Projects
+:PROPERTIES:
+:ID:       a23e5e51-6634-4807-a5db-5d772c8ea1b3
+:END:
+
+Projects that are not completely planned and need some more thought before they
+can be started have their own section. I can't work on tasks for those projects
+right now. But still, I want to have them visible in order to drive me to
+complete the planning.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb yes :noweb-ref my-agenda-cmd-project-plan
+(<<my-agenda-cmd-project-plan-cmd-match>>
+      <<my-agenda-cmd-project-plan-settings>>)
+#+END_SRC
+
+All projects to be considered in this section are in =PLANNING= state.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-agenda-cmd-project-plan-cmd-match
+tags-todo "/!-HOLD-CANCELLED+PLANNING"
+#+END_SRC
+
+The skip function is the same as for regular projects
+([[id:6faa31dc-43a0-447a-88d0-fffbe14a3cb0][=rrogg/skip-non-projects=]]).
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-agenda-cmd-project-plan-settings
+((org-agenda-overriding-header "Planned Projects")
+ (org-agenda-skip-function 'rrogg/skip-non-projects))
+#+END_SRC
+
+***** Waiting and On-Hold Tasks
+
+All tasks that I am waiting on or that I put on hold for now, are listed
+here. This sections prevents that those tasks are forgotten and acts as a
+reminder to reinvestigate why they are blocked.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb yes :noweb-ref my-agenda-cmd-waiting
+(<<my-agenda-cmd-waiting-cmd-match>>
+      <<my-agenda-cmd-waiting-settings>>)
+#+END_SRC
+
+=WAITING= and =HOLD= states are considered to be shown here.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-agenda-cmd-waiting-cmd-match
+tags-todo "/!-CANCELLED+WAITING|+HOLD"
+#+END_SRC
+
+Everything that is not a task will be skipped by [[id:25074132-89d0-4e89-98bd-be8e34637b75][=rrogg/skip-non-tasks=]].
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-agenda-cmd-waiting-settings
+((org-agenda-overriding-header "Waiting and On-Hold Tasks")
+ (org-agenda-skip-function 'rrogg/skip-non-tasks))
+#+END_SRC
+
 **** Functions for Agenda Building
 
 ***** Skip Functions
@@ -1773,6 +1916,9 @@ The expected return values are:
 - =nil=: In case of a heading that should not be skipped.
 
 ****** Skip Projects and Project Tasks
+:PROPERTIES:
+:ID:       4743e8ba-4c6c-459b-9c26-a669ad843dc8
+:END:
 
 First of, =save-restriction= saves the current buffer’s restrictions when it is
 entered and restores them when it is exited.
@@ -1787,6 +1933,8 @@ and buffer.
 The body of =let= is a conditional control structure =cond=. The body of the
 first condition successfully is returned. If non succeeds the return value is
 =nil=.
+The headings will be checked against [[id:4564159d-6e4b-43a2-9ec5-7650d25501c7][=rrogg/is-project-p=]]. If this functions
+returns =t=, the complete subtree will be skipped.
 
 #+BEGIN_SRC emacs-lisp
 (defun rrogg/skip-project-tasks ()
@@ -1798,7 +1946,129 @@ Return nil in case the heading should not be skipped."
     (let ((end-of-subtree (save-excursion (org-end-of-subtree t))))
       (cond
        ((rrogg/is-project-p)
+        end-of-subtree)
+       (t
+        nil)))))
+#+END_SRC
+
+****** Skip Non-Projects
+:PROPERTIES:
+:ID:       6faa31dc-43a0-447a-88d0-fffbe14a3cb0
+:END:
+
+This function follows the same structure as [[id:4743e8ba-4c6c-459b-9c26-a669ad843dc8][=rrogg/skip-project-tasks=]].
+Headings will be checked against [[id:10e7b990-3bb5-4a81-8015-d0b7c59fa95c][=rrogg/is-stuck-project-p=]] and
+[[id:4564159d-6e4b-43a2-9ec5-7650d25501c7][=rrogg/is-project-p=]].
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/skip-non-projects ()
+  "Skip org-headings that are not projects.
+If heading should be skipped, return position of end of subtree to continue searching.
+Return nil in case the heading should not be skipped."
+  (save-restriction
+    (widen)
+    (let ((end-of-subtree (save-excursion (org-end-of-subtree t))))
+      (cond
+       ((rrogg/is-stuck-project-p)
+        end-of-subtree)
+       ((rrogg/is-project-p)
+        nil)
+       (t
         end-of-subtree)))))
+#+END_SRC
+
+****** Skip Non-Project Tasks
+:PROPERTIES:
+:ID:       65df0c1d-cc31-4823-9153-a0362b0257f9
+:END:
+
+Similar structure to the previous skip functions.
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/skip-non-project-tasks ()
+  "Skip org-headings that are projects, subproject tasks or standalone tasks.
+If heading should be skipped, return position of end of subtree to continue searching.
+Return nil in case the heading should not be skipped."
+  (save-restriction
+    (widen)
+    (let ((end-of-subtree (save-excursion (org-end-of-subtree t)))
+          (next-headline (save-excursion (or (outline-next-heading) (point-max)))))
+      (cond
+       ((rrogg/is-project-p)
+        next-headline)
+       ((and (rrogg/is-project-task-p)
+             (equal (org-get-todo-state) "NEXT"))
+        end-of-subtree)
+       ((not (rrogg/is-project-task-p))
+        end-of-subtree)
+       (t
+        nil)))))
+#+END_SRC
+
+****** Skip Projects and Standalone Tasks
+:PROPERTIES:
+:ID:       61741020-afa3-43ed-8db2-ba936490c0cd
+:END:
+
+Similar structure to the previous skip functions.
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/skip-projects-standalone ()
+  "Skip org-headings that are projects or standalone tasks.
+If heading should be skipped, return position of end of subtree to continue searching.
+Return nil in case the heading should not be skipped."
+  (save-restriction
+    (widen)
+    (let ((next-headline (save-excursion (or (outline-next-heading) (point-max)))))
+      (cond
+       ((rrogg/is-project-p)
+        next-headline)
+       ((and (rrogg/is-task-p) (not (rrogg/is-project-task-p)))
+        next-headline)
+       (t
+        nil)))))
+#+END_SRC
+
+****** Skip Non-Stuck-Projects
+:PROPERTIES:
+:ID:       8dc94898-0f38-4aee-b1be-db569f3879a3
+:END:
+
+Similar structure to the previous skip functions.
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/skip-non-stuck-projects ()
+  "Skip org-headings that are projects and not stuck.
+If heading should be skipped, return position of end of subtree to continue searching.
+Return nil in case the heading should not be skipped."
+  (save-restriction
+    (widen)
+    (let ((next-headline (save-excursion (or (outline-next-heading) (point-max)))))
+      (if (rrogg/is-stuck-project-p)
+          nil
+        next-headline))))
+#+END_SRC
+
+****** Skip Non-Tasks
+:PROPERTIES:
+:ID:       25074132-89d0-4e89-98bd-be8e34637b75
+:END:
+
+Similar structure to the previous skip functions.
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/skip-non-tasks ()
+  "Skip org-headings that are projects or subprojects.
+If heading should be skipped, return position of end of subtree to continue searching.
+Return nil in case the heading should not be skipped."
+  (save-restriction
+    (widen)
+    (let ((next-headline (save-excursion (or (outline-next-heading) (point-max)))))
+      (cond
+       ((rrogg/is-task-p)
+        nil)
+       (t
+        next-headline)))))
 #+END_SRC
 
 ***** Identification Functions
@@ -1808,6 +2078,9 @@ entry is.
 Return value is either =t= or =nil=.
 
 ****** Identify Projects
+:PROPERTIES:
+:ID:       4564159d-6e4b-43a2-9ec5-7650d25501c7
+:END:
 
 Current buffer's restrictions are saved via =save-restriction= and restored when
 the function is exited.
@@ -1830,7 +2103,7 @@ The return value is =t= if both of =is-task= and =has-subtask= are =t=.
   (save-restriction
     (widen)
     (let ((end-of-subtree (save-excursion (org-end-of-subtree t)))
-          (is-task (member (nth 2 (org-heading-components)) org-todo-keywords-1))
+          (is-task (member (org-get-todo-state) org-todo-keywords-1))
           (has-subtask))
       (save-excursion
         (forward-line 1)
@@ -1840,6 +2113,98 @@ The return value is =t= if both of =is-task= and =has-subtask= are =t=.
           (when (member (org-get-todo-state) org-todo-keywords-1)
             (setq has-subtask t))))
       (and is-task has-subtask))))
+#+END_SRC
+
+****** Identify Stuck Projects
+:PROPERTIES:
+:ID:       10e7b990-3bb5-4a81-8015-d0b7c59fa95c
+:END:
+
+Similar structure to the previous identify function.
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/is-stuck-project-p ()
+  "A task without a subtask in NEXT state is a stuck project."
+  (save-restriction
+    (widen)
+    (if (rrogg/is-project-p)
+        (let ((end-of-subtree (save-excursion (org-end-of-subtree t)))
+              (has-next-subtask))
+          (save-excursion
+            (forward-line 1)
+            (while (and (< (point) end-of-subtree) (re-search-forward "^\*+ NEXT " end-of-subtree t) (not has-next-subtask))
+              (setq has-next-subtask t)))
+          (if has-next-subtask
+              nil
+            t))
+      nil)))
+#+END_SRC
+
+****** Identify Tasks
+:PROPERTIES:
+:ID:       4b9cc45a-ced1-4b52-804e-277fb0d97166
+:END:
+
+Similar structure to the previous identify functions.
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/is-task-p ()
+  "Check if task has no subtask."
+  (save-restriction
+    (widen)
+    (let ((end-of-subtree (save-excursion (org-end-of-subtree t)))
+          (is-task (member (org-get-todo-state) org-todo-keywords-1))
+          (has-subtask))
+      (save-excursion
+        (forward-line 1)
+        (while (and (< (point) end-of-subtree)
+                    (re-search-forward "^\*+ " end-of-subtree t)
+                    (not has-subtask))
+          (when (member (org-get-todo-state) org-todo-keywords-1)
+            (setq has-subtask t))))
+      (and is-task (not has-subtask)))))
+#+END_SRC
+
+****** Identify Project Task
+:PROPERTIES:
+:ID:       898ba890-792b-4d57-a67e-255e88f5ef68
+:END:
+
+Similar structure to the previous identify functions.
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/is-project-task-p ()
+  "Check if task is part of a project."
+  (save-restriction
+    (widen)
+    (let ((parent-task (save-excursion (org-back-to-heading t) (point))))
+      (save-excursion
+        (rrogg/find-parent-task)
+        (if (equal (point) parent-task)
+            nil
+          t)))))
+#+END_SRC
+
+***** Search Functions
+
+The following functions are used to search for specific org-headings or tasks.
+Return value is the position of point at the beginning of the heading or =nil=.
+
+****** Find Parent Task
+:PROPERTIES:
+:ID:       1e618736-8432-4213-84cf-94b9835a8ede
+:END:
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/find-parent-task ()
+  "Move point to the parent task of a task."
+  (save-restriction
+    (widen)
+    (let ((parent-task (save-excursion (org-back-to-heading t) (point))))
+        (while (org-up-heading-safe)
+          (when (member (org-get-todo-state) org-todo-keywords-1)
+            (setq parent-task (point))))
+        (goto-char parent-task))))
 #+END_SRC
 
 *** Show Small Icons in Agenda View
