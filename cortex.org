@@ -1,5 +1,8 @@
 #+TITLE: CORTEX - AN EMACS CONFIGURATION
 #+PROPERTY: header-args :result silent :tangle "~/.emacs.d/init.el" :eval no-export :comments org
+:PROPERTIES:
+:ID:       a6abcbf1-f6b9-483d-a458-bb981b05cb19
+:END:
 
 * Track Loading Time of Cortex
 
@@ -1080,6 +1083,9 @@ When point is on a link, =RET= will follow it.
 #+END_SRC
 
 ** Tasks and States
+:PROPERTIES:
+:ID:       513bdaa7-0272-4202-b277-51ac65d1b236
+:END:
 
 #+BEGIN_SRC emacs-lisp
 (use-package org
@@ -1288,7 +1294,7 @@ logged into the item's logbook drawer.
     (setq org-refile-targets '((nil :maxlevel . 9)
 			       (org-agenda-files :maxlevel . 9)))
     (setq org-refile-use-outline-path 'file)
-    ;; (setq org-outline-path-complete-in-steps nil)
+    (setq org-outline-path-complete-in-steps nil)
     (setq org-refile-allow-creating-parent-nodes '(confirm))
     (setq org-log-refile 'time)
     (setq org-log-into-drawer t))
@@ -1785,7 +1791,8 @@ The skip function that identifies projects is [[id:6faa31dc-43a0-447a-88d0-fffbe
 
 #+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-agenda-cmd-project-settings
 ((org-agenda-overriding-header "Projects")
- (org-agenda-skip-function 'rrogg/skip-non-projects))
+ (org-agenda-skip-function 'rrogg/skip-non-projects)
+ (org-tags-match-list-sublevels 'indented))
 #+END_SRC
 
 ***** Project Next Tasks
