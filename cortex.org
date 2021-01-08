@@ -1655,7 +1655,7 @@ agenda.
 #+BEGIN_SRC emacs-lisp
 (use-package org
   :config
-  (setq org-agenda-files '("~/org/refile.org" "~/org/work.org" "~/org/private.org"))
+  (setq org-agenda-files '("~/org/refile.org" "~/org/work/work.org" "~/org/private/private.org"))
   :bind ("C-c a" . org-agenda))
 #+END_SRC
 
@@ -1757,7 +1757,7 @@ be in a =NEXT= state.
 Exclude projects that are on hold or cancelled.
 
 #+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-agenda-cmd-stuck-project-cmd-match
-tags-todo "/!-HOLD-CANCELLED"
+tags-todo "/!-HOLD-CANCELLED-PLANNING"
 #+END_SRC
 
 Projects can't be found with todo-states alone, because I don't have a dedicated
@@ -2053,9 +2053,15 @@ Return nil in case the heading should not be skipped."
   (save-restriction
     (widen)
     (let ((next-headline (save-excursion (or (outline-next-heading) (point-max)))))
-      (if (rrogg/is-stuck-project-p)
-          nil
-        next-headline))))
+      (cond
+       ((rrogg/is-project-planning-task-p)
+        next-headline)
+       ((rrogg/is-project-hold-task-p)
+        next-headline)
+       ((rrogg/is-stuck-project-p)
+        nil)
+       (t
+        next-headline)))))
 #+END_SRC
 
 ****** Skip Non-Tasks
@@ -2210,6 +2216,22 @@ Similar structure to the previous identify functions.
             nil
           t)))))
 #+END_SRC
+****** Identify Project Hold Task
+
+Similar structure to the previous identify functions.
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/is-project-hold-task-p ()
+  "Check if task is part of a project in hold state."
+  (save-restriction
+    (widen)
+    (let ((parent-task (save-excursion (org-back-to-heading t) (point))))
+      (save-excursion
+        (rrogg/find-parent-hold-task)
+        (if (equal (point) parent-task)
+            nil
+          t)))))
+#+END_SRC
 
 ***** Search Functions
 
@@ -2243,6 +2265,20 @@ Return value is the position of point at the beginning of the heading or =nil=.
     (let ((parent-task (save-excursion (org-back-to-heading t) (point))))
         (while (org-up-heading-safe)
           (when (equal (org-get-todo-state) "PLANNING")
+            (setq parent-task (point))))
+        (goto-char parent-task))))
+#+END_SRC
+
+****** Find Parent Hold Task
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/find-parent-hold-task ()
+  "Move point to the parent hold task of a task."
+  (save-restriction
+    (widen)
+    (let ((parent-task (save-excursion (org-back-to-heading t) (point))))
+        (while (org-up-heading-safe)
+          (when (equal (org-get-todo-state) "HOLD")
             (setq parent-task (point))))
         (goto-char parent-task))))
 #+END_SRC
