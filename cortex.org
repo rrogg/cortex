@@ -2032,6 +2032,8 @@ Return nil in case the heading should not be skipped."
         next-headline)
        ((and (rrogg/is-task-p) (not (rrogg/is-project-task-p)))
         next-headline)
+       ((rrogg/is-project-planning-task-p)
+        next-headline)
        (t
         nil)))))
 #+END_SRC
@@ -2192,6 +2194,23 @@ Similar structure to the previous identify functions.
           t)))))
 #+END_SRC
 
+****** Identify Project Planning Task
+
+Similar structure to the previous identify functions.
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/is-project-planning-task-p ()
+  "Check if task is part of a project in planning state."
+  (save-restriction
+    (widen)
+    (let ((parent-task (save-excursion (org-back-to-heading t) (point))))
+      (save-excursion
+        (rrogg/find-parent-planning-task)
+        (if (equal (point) parent-task)
+            nil
+          t)))))
+#+END_SRC
+
 ***** Search Functions
 
 The following functions are used to search for specific org-headings or tasks.
@@ -2210,6 +2229,20 @@ Return value is the position of point at the beginning of the heading or =nil=.
     (let ((parent-task (save-excursion (org-back-to-heading t) (point))))
         (while (org-up-heading-safe)
           (when (member (org-get-todo-state) org-todo-keywords-1)
+            (setq parent-task (point))))
+        (goto-char parent-task))))
+#+END_SRC
+
+****** Find Parent Planning Task
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/find-parent-planning-task ()
+  "Move point to the parent planning task of a task."
+  (save-restriction
+    (widen)
+    (let ((parent-task (save-excursion (org-back-to-heading t) (point))))
+        (while (org-up-heading-safe)
+          (when (equal (org-get-todo-state) "PLANNING")
             (setq parent-task (point))))
         (goto-char parent-task))))
 #+END_SRC
