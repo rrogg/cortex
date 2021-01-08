@@ -426,12 +426,12 @@ code. All customizations can be done here.
 
   (dolist (themes '("operandi" "vivendi"))
     (rrogg/format-sexp
-      (defun rrogg/modus-%1$s ()
-        (setq modus-%1$s-theme-org-blocks nil)
-        (setq modus-%1$s-theme-scale-headings nil)
-        (load-theme 'modus-%1$s t)
-        (run-hooks 'rrogg/modus-theme-after-load-hook))
-      themes)))
+     (defun rrogg/modus-%1$s ()
+       (setq modus-%1$s-theme-org-blocks nil)
+       (setq modus-%1$s-theme-scale-headings nil)
+       (load-theme 'modus-%1$s t)
+       (run-hooks 'rrogg/modus-theme-after-load-hook))
+     themes)))
 #+END_SRC
 
 The light theme is the default.
@@ -549,8 +549,7 @@ e.g. emacs-version, and a command, e.g. =emacs-version=, to the log file.
 (defun rrogg/cortex-log-hostspecific (string command)
   "append a string and the result of a command to the rrogg/cortex-var-log-hostname-file file"
   (interactive)
-  (write-region (concat string " " command "\n") nil rrogg/cortex-var-log-hostname-file t)
-)
+  (write-region (concat string " " command "\n") nil rrogg/cortex-var-log-hostname-file t))
 #+END_SRC
 
 This is the first use of the function above. Write the Emacs version to the log
@@ -596,14 +595,14 @@ The list is displayed in the =*Messages*= buffer after Cortex has been loaded.
   (or warningtext (setq warningtext (concat "»»» I could not locate the PATH-binary for: " binaryname)))
   (let* ((binarypath (rrogg/binary-found binaryname)))
     (if binarypath
-      ;; binary was found in exec-path
-      (concat binarypath)
-    (progn
-      ;; binary NOT found in exec-path:
-      (message warningtext)
-      (if rrogg/binary-not-found-list
-        (add-to-list 'rrogg/binary-not-found-list binaryname)
-        (setq rrogg/binary-not-found-list (list binaryname)))))))
+        ;; binary was found in exec-path
+        (concat binarypath)
+      (progn
+        ;; binary NOT found in exec-path:
+        (message warningtext)
+        (if rrogg/binary-not-found-list
+            (add-to-list 'rrogg/binary-not-found-list binaryname)
+          (setq rrogg/binary-not-found-list (list binaryname)))))))
 #+END_SRC
 
 =rrogg/eval-if-binary-or-warn= is also used to evaluate if a functionality of
@@ -632,8 +631,8 @@ recover-file <RET> file <RET>=.
 
 #+BEGIN_SRC emacs-lisp
 (setq auto-save-file-name-transforms
-      `((".*" , (no-littering-expand-var-file-name "auto-save/") t))
-      vc-make-backup-files t)
+      `((".*" , (no-littering-expand-var-file-name "auto-save/") t)))
+(setq vc-make-backup-files t)
 #+END_SRC
 
 * Magit - Using git Within Emacs
@@ -701,8 +700,8 @@ The body of the message is wrapped at length 72.
 (use-package magit
   :if (rrogg/eval-if-binary-or-warn "git")
   :config
-    (setq git-commit-summary-max-length 50)
-    (setq git-commit-fill-column 72))
+  (setq git-commit-summary-max-length 50)
+  (setq git-commit-fill-column 72))
 #+END_SRC
 
 * Maximize Frame Window
@@ -727,6 +726,23 @@ role when writing code in emacs lisp.
   :config
   (setq show-paren-style 'parenthesis)
   :hook (after-init-hook . show-paren-mode))
+#+END_SRC
+
+* Tabs and Indentation
+:PROPERTIES:
+:ID:       556b6efd-823a-4d33-927b-3ddf948c6eea
+:END:
+
+Tabs are disabled.
+The =TAB= key will first try to indent the line and then try to complete what is
+at point (if it can be completed).
+
+#+BEGIN_SRC emacs-lisp
+(use-package emacs
+  :config
+  (setq-default tab-always-indent 'complete)
+  (setq-default tab-width 4)
+  (setq-default indent-tabs-mode nil))
 #+END_SRC
 
 * Save Commands Across Sessions
@@ -857,17 +873,17 @@ has to appear somewhere below a heading in an org file included in the
 (use-package holidays
   :init
   (setq calendar-holidays
-          '((holiday-fixed 1 1 "Neujahr")
-            (holiday-fixed 5 1 "Tag der Arbeit")
-            (holiday-fixed 10 3 "Tag der Deutschen Einheit")
-            (holiday-fixed 12 25 "1. Weihnachtstag")
-            (holiday-fixed 12 26 "2. Weihnachtstag")
-            (holiday-easter-etc  -2 "Karfreitag")
-            (holiday-easter-etc  +1 "Ostermontag")
-            (holiday-easter-etc +39 "Christi Himmelfahrt")
-            (holiday-easter-etc +50 "Pfingstmontag")
-            (holiday-easter-etc +60 "Fronleichnam")
-            (holiday-fixed 11 1 "Allerheiligen"))))
+        '((holiday-fixed 1 1 "Neujahr")
+          (holiday-fixed 5 1 "Tag der Arbeit")
+          (holiday-fixed 10 3 "Tag der Deutschen Einheit")
+          (holiday-fixed 12 25 "1. Weihnachtstag")
+          (holiday-fixed 12 26 "2. Weihnachtstag")
+          (holiday-easter-etc  -2 "Karfreitag")
+          (holiday-easter-etc  +1 "Ostermontag")
+          (holiday-easter-etc +39 "Christi Himmelfahrt")
+          (holiday-easter-etc +50 "Pfingstmontag")
+          (holiday-easter-etc +60 "Fronleichnam")
+          (holiday-fixed 11 1 "Allerheiligen"))))
 #+END_SRC
 
 ** Special Dates
@@ -926,28 +942,28 @@ The special dates are those in the list `calendar-specialdates'."
      'calendar-date-compare)))
 
 (setq rrogg/calendar-specialdates
-            '((holiday-float 5 0 2 "Muttertag")
-              (holiday-float 6 0 3 "Vatertag")
-              (holiday-float 12 0 -4 "1. Advent" 24)
-              (holiday-float 12 0 -3 "2. Advent" 24)
-              (holiday-float 12 0 -2 "3. Advent" 24)
-              (holiday-float 12 0 -1 "4. Advent" 24)
-              (holiday-fixed 12 24 "Heiligabend")
-              (holiday-fixed 1 6 "Heilige Drei Könige")
-              (holiday-easter-etc -52 "Weiberfastnacht")
-              (holiday-easter-etc -50 "Karnevalssamstag")
-              (holiday-easter-etc -49 "Karnevalssonntag")
-              (holiday-easter-etc -48 "Rosenmontag")
-              (holiday-easter-etc -47 "Veilchendienstag")
-              (holiday-easter-etc -46 "Aschermittwoch")
-              (holiday-easter-etc -3 "Gründonnerstag")
-              (holiday-easter-etc   0 "Ostersonntag")
-              (holiday-easter-etc +49 "Pfingstsonntag")
-              (holiday-fixed 8 15 "Mariae Himmelfahrt")
-              (holiday-fixed 11 11 "Martinstag")
-              (holiday-fixed 11 11 "Elfter im Elften")
-              (holiday-float 11 3 1 "Buss- und Bettag" 16)
-              (holiday-float 11 0 1 "Totensonntag" 20)))
+      '((holiday-float 5 0 2 "Muttertag")
+        (holiday-float 6 0 3 "Vatertag")
+        (holiday-float 12 0 -4 "1. Advent" 24)
+        (holiday-float 12 0 -3 "2. Advent" 24)
+        (holiday-float 12 0 -2 "3. Advent" 24)
+        (holiday-float 12 0 -1 "4. Advent" 24)
+        (holiday-fixed 12 24 "Heiligabend")
+        (holiday-fixed 1 6 "Heilige Drei Könige")
+        (holiday-easter-etc -52 "Weiberfastnacht")
+        (holiday-easter-etc -50 "Karnevalssamstag")
+        (holiday-easter-etc -49 "Karnevalssonntag")
+        (holiday-easter-etc -48 "Rosenmontag")
+        (holiday-easter-etc -47 "Veilchendienstag")
+        (holiday-easter-etc -46 "Aschermittwoch")
+        (holiday-easter-etc -3 "Gründonnerstag")
+        (holiday-easter-etc   0 "Ostersonntag")
+        (holiday-easter-etc +49 "Pfingstsonntag")
+        (holiday-fixed 8 15 "Mariae Himmelfahrt")
+        (holiday-fixed 11 11 "Martinstag")
+        (holiday-fixed 11 11 "Elfter im Elften")
+        (holiday-float 11 3 1 "Buss- und Bettag" 16)
+        (holiday-float 11 0 1 "Totensonntag" 20)))
 #+END_SRC
 
 ** Solar Calendar
@@ -1013,16 +1029,16 @@ The solar are those in the list `calendar-solar'."
      'calendar-date-compare)))
 
 (setq rrogg/calendar-solar
-            '((holiday-sexp calendar-daylight-savings-starts
-	       (format "Beginn der Sommerzeit – die Uhr wird um eine Stunde vorgestellt %s"
-		       (solar-time-string
-			(/ calendar-daylight-savings-starts-time . #1=((float 60)))
-			calendar-standard-time-zone-name)))
-              (holiday-sexp calendar-daylight-savings-ends
-	       (format "Ende der Sommerzeit – die Uhr wird um eine Stunde zurückgestellt %s"
-		       (solar-time-string
-			(/ calendar-daylight-savings-ends-time . #1#)
-			calendar-daylight-time-zone-name)))))
+      '((holiday-sexp calendar-daylight-savings-starts
+	                  (format "Beginn der Sommerzeit – die Uhr wird um eine Stunde vorgestellt %s"
+		                      (solar-time-string
+			                   (/ calendar-daylight-savings-starts-time . #1=((float 60)))
+			                   calendar-standard-time-zone-name)))
+        (holiday-sexp calendar-daylight-savings-ends
+	                  (format "Ende der Sommerzeit – die Uhr wird um eine Stunde zurückgestellt %s"
+		                      (solar-time-string
+			                   (/ calendar-daylight-savings-ends-time . #1#)
+			                   calendar-daylight-time-zone-name)))))
 #+END_SRC
 
 * Org Mode
@@ -1304,15 +1320,15 @@ A time stamp is created on completion of the refile process for an item and
 logged into the item's logbook drawer.
 
 #+BEGIN_SRC emacs-lisp
-  (use-package org
-    :config
-    (setq org-refile-targets '((nil :maxlevel . 9)
-			       (org-agenda-files :maxlevel . 9)))
-    (setq org-refile-use-outline-path 'file)
-    (setq org-outline-path-complete-in-steps nil)
-    (setq org-refile-allow-creating-parent-nodes '(confirm))
-    (setq org-log-refile 'time)
-    (setq org-log-into-drawer t))
+(use-package org
+  :config
+  (setq org-refile-targets '((nil :maxlevel . 9)
+			                 (org-agenda-files :maxlevel . 9)))
+  (setq org-refile-use-outline-path 'file)
+  (setq org-outline-path-complete-in-steps nil)
+  (setq org-refile-allow-creating-parent-nodes '(confirm))
+  (setq org-log-refile 'time)
+  (setq org-log-into-drawer t))
 #+END_SRC
 
 ** Contacts
@@ -1368,22 +1384,22 @@ Format is a string matching the following format specification:
         (entry ""))
     (unless format (setq format rrogg/org-contacts-weddingday-format))
     (cl-loop for contact in (org-contacts-filter)
-	     for anniv = (let ((anniv (cdr (assoc-string
-					    (or field rrogg/org-contacts-weddingday-property)
-					    (nth 2 contact)))))
-			   (when anniv
-			     (calendar-gregorian-from-absolute
-			      (org-time-string-to-absolute anniv))))
-	     ;; Use `diary-anniversary' to compute anniversary.
-	     if (and anniv (apply 'diary-anniversary anniv))
-	     collect (format-spec format
-				  `((?l . ,(org-with-point-at (cadr contact) (org-store-link nil)))
-				    (?h . ,(car contact))
-				    (?y . ,(- (calendar-extract-year date)
-					      (calendar-extract-year anniv)))
-				    (?Y . ,(let ((years (- (calendar-extract-year date)
-							   (calendar-extract-year anniv))))
-					     (format "%d%s" years (diary-ordinal-suffix years)))))))))
+	         for anniv = (let ((anniv (cdr (assoc-string
+					                        (or field rrogg/org-contacts-weddingday-property)
+					                        (nth 2 contact)))))
+			               (when anniv
+			                 (calendar-gregorian-from-absolute
+			                  (org-time-string-to-absolute anniv))))
+	         ;; Use `diary-anniversary' to compute anniversary.
+	         if (and anniv (apply 'diary-anniversary anniv))
+	         collect (format-spec format
+				                  `((?l . ,(org-with-point-at (cadr contact) (org-store-link nil)))
+				                    (?h . ,(car contact))
+				                    (?y . ,(- (calendar-extract-year date)
+					                          (calendar-extract-year anniv)))
+				                    (?Y . ,(let ((years (- (calendar-extract-year date)
+							                               (calendar-extract-year anniv))))
+					                         (format "%d%s" years (diary-ordinal-suffix years)))))))))
 
 (defcustom rrogg/org-contacts-weddingday-property "WEDDINGDAY"
   "Name of the property for contact weddingday date."
@@ -1419,22 +1435,22 @@ Format is a string matching the following format specification:
         (entry ""))
     (unless format (setq format rrogg/org-contacts-civil-weddingday-format))
     (cl-loop for contact in (org-contacts-filter)
-	     for anniv = (let ((anniv (cdr (assoc-string
-					    (or field rrogg/org-contacts-civil-weddingday-property)
-					    (nth 2 contact)))))
-			   (when anniv
-			     (calendar-gregorian-from-absolute
-			      (org-time-string-to-absolute anniv))))
-	     ;; Use `diary-anniversary' to compute anniversary.
-	     if (and anniv (apply 'diary-anniversary anniv))
-	     collect (format-spec format
-				  `((?l . ,(org-with-point-at (cadr contact) (org-store-link nil)))
-				    (?h . ,(car contact))
-				    (?y . ,(- (calendar-extract-year date)
-					      (calendar-extract-year anniv)))
-				    (?Y . ,(let ((years (- (calendar-extract-year date)
-							   (calendar-extract-year anniv))))
-					     (format "%d%s" years (diary-ordinal-suffix years)))))))))
+	         for anniv = (let ((anniv (cdr (assoc-string
+					                        (or field rrogg/org-contacts-civil-weddingday-property)
+					                        (nth 2 contact)))))
+			               (when anniv
+			                 (calendar-gregorian-from-absolute
+			                  (org-time-string-to-absolute anniv))))
+	         ;; Use `diary-anniversary' to compute anniversary.
+	         if (and anniv (apply 'diary-anniversary anniv))
+	         collect (format-spec format
+				                  `((?l . ,(org-with-point-at (cadr contact) (org-store-link nil)))
+				                    (?h . ,(car contact))
+				                    (?y . ,(- (calendar-extract-year date)
+					                          (calendar-extract-year anniv)))
+				                    (?Y . ,(let ((years (- (calendar-extract-year date)
+							                               (calendar-extract-year anniv))))
+					                         (format "%d%s" years (diary-ordinal-suffix years)))))))))
 
 (defcustom rrogg/org-contacts-civil-weddingday-property "CIVILWEDDINGDAY"
   "Name of the property for contact civil weddingday date."
@@ -1470,22 +1486,22 @@ Format is a string matching the following format specification:
         (entry ""))
     (unless format (setq format rrogg/org-contacts-first-met-format))
     (cl-loop for contact in (org-contacts-filter)
-	     for anniv = (let ((anniv (cdr (assoc-string
-					    (or field rrogg/org-contacts-first-met-property)
-					    (nth 2 contact)))))
-			   (when anniv
-			     (calendar-gregorian-from-absolute
-			      (org-time-string-to-absolute anniv))))
-	     ;; Use `diary-anniversary' to compute anniversary.
-	     if (and anniv (apply 'diary-anniversary anniv))
-	     collect (format-spec format
-				  `((?l . ,(org-with-point-at (cadr contact) (org-store-link nil)))
-				    (?h . ,(car contact))
-				    (?y . ,(- (calendar-extract-year date)
-					      (calendar-extract-year anniv)))
-				    (?Y . ,(let ((years (- (calendar-extract-year date)
-							   (calendar-extract-year anniv))))
-					     (format "%d%s" years (diary-ordinal-suffix years)))))))))
+	         for anniv = (let ((anniv (cdr (assoc-string
+					                        (or field rrogg/org-contacts-first-met-property)
+					                        (nth 2 contact)))))
+			               (when anniv
+			                 (calendar-gregorian-from-absolute
+			                  (org-time-string-to-absolute anniv))))
+	         ;; Use `diary-anniversary' to compute anniversary.
+	         if (and anniv (apply 'diary-anniversary anniv))
+	         collect (format-spec format
+				                  `((?l . ,(org-with-point-at (cadr contact) (org-store-link nil)))
+				                    (?h . ,(car contact))
+				                    (?y . ,(- (calendar-extract-year date)
+					                          (calendar-extract-year anniv)))
+				                    (?Y . ,(let ((years (- (calendar-extract-year date)
+							                               (calendar-extract-year anniv))))
+					                         (format "%d%s" years (diary-ordinal-suffix years)))))))))
 
 (defcustom rrogg/org-contacts-first-met-property "FIRSTMET"
   "Name of the property for contact firstmet date."
@@ -1521,22 +1537,22 @@ Format is a string matching the following format specification:
         (entry ""))
     (unless format (setq format rrogg/org-contacts-relationshipday-format))
     (cl-loop for contact in (org-contacts-filter)
-	     for anniv = (let ((anniv (cdr (assoc-string
-					    (or field rrogg/org-contacts-relationshipday-property)
-					    (nth 2 contact)))))
-			   (when anniv
-			     (calendar-gregorian-from-absolute
-			      (org-time-string-to-absolute anniv))))
-	     ;; Use `diary-anniversary' to compute anniversary.
-	     if (and anniv (apply 'diary-anniversary anniv))
-	     collect (format-spec format
-				  `((?l . ,(org-with-point-at (cadr contact) (org-store-link nil)))
-				    (?h . ,(car contact))
-				    (?y . ,(- (calendar-extract-year date)
-					      (calendar-extract-year anniv)))
-				    (?Y . ,(let ((years (- (calendar-extract-year date)
-							   (calendar-extract-year anniv))))
-					     (format "%d%s" years (diary-ordinal-suffix years)))))))))
+	         for anniv = (let ((anniv (cdr (assoc-string
+					                        (or field rrogg/org-contacts-relationshipday-property)
+					                        (nth 2 contact)))))
+			               (when anniv
+			                 (calendar-gregorian-from-absolute
+			                  (org-time-string-to-absolute anniv))))
+	         ;; Use `diary-anniversary' to compute anniversary.
+	         if (and anniv (apply 'diary-anniversary anniv))
+	         collect (format-spec format
+				                  `((?l . ,(org-with-point-at (cadr contact) (org-store-link nil)))
+				                    (?h . ,(car contact))
+				                    (?y . ,(- (calendar-extract-year date)
+					                          (calendar-extract-year anniv)))
+				                    (?Y . ,(let ((years (- (calendar-extract-year date)
+							                               (calendar-extract-year anniv))))
+					                         (format "%d%s" years (diary-ordinal-suffix years)))))))))
 
 (defcustom rrogg/org-contacts-relationshipday-property "RELATIONSHIPDAY"
   "Name of the property for contact realtionshipday date."
@@ -1572,22 +1588,22 @@ Format is a string matching the following format specification:
         (entry ""))
     (unless format (setq format rrogg/org-contacts-proposalday-format))
     (cl-loop for contact in (org-contacts-filter)
-	     for anniv = (let ((anniv (cdr (assoc-string
-					    (or field rrogg/org-contacts-proposalday-property)
-					    (nth 2 contact)))))
-			   (when anniv
-			     (calendar-gregorian-from-absolute
-			      (org-time-string-to-absolute anniv))))
-	     ;; Use `diary-anniversary' to compute anniversary.
-	     if (and anniv (apply 'diary-anniversary anniv))
-	     collect (format-spec format
-				  `((?l . ,(org-with-point-at (cadr contact) (org-store-link nil)))
-				    (?h . ,(car contact))
-				    (?y . ,(- (calendar-extract-year date)
-					      (calendar-extract-year anniv)))
-				    (?Y . ,(let ((years (- (calendar-extract-year date)
-							   (calendar-extract-year anniv))))
-					     (format "%d%s" years (diary-ordinal-suffix years)))))))))
+	         for anniv = (let ((anniv (cdr (assoc-string
+					                        (or field rrogg/org-contacts-proposalday-property)
+					                        (nth 2 contact)))))
+			               (when anniv
+			                 (calendar-gregorian-from-absolute
+			                  (org-time-string-to-absolute anniv))))
+	         ;; Use `diary-anniversary' to compute anniversary.
+	         if (and anniv (apply 'diary-anniversary anniv))
+	         collect (format-spec format
+				                  `((?l . ,(org-with-point-at (cadr contact) (org-store-link nil)))
+				                    (?h . ,(car contact))
+				                    (?y . ,(- (calendar-extract-year date)
+					                          (calendar-extract-year anniv)))
+				                    (?Y . ,(let ((years (- (calendar-extract-year date)
+							                               (calendar-extract-year anniv))))
+					                         (format "%d%s" years (diary-ordinal-suffix years)))))))))
 
 (defcustom rrogg/org-contacts-proposalday-property "PROPOSALDAY"
   "Name of the property for contact proposalday date."
@@ -1623,22 +1639,22 @@ Format is a string matching the following format specification:
         (entry ""))
     (unless format (setq format rrogg/org-contacts-dayofdeath-format))
     (cl-loop for contact in (org-contacts-filter)
-	     for anniv = (let ((anniv (cdr (assoc-string
-					    (or field rrogg/org-contacts-dayofdeath-property)
-					    (nth 2 contact)))))
-			   (when anniv
-			     (calendar-gregorian-from-absolute
-			      (org-time-string-to-absolute anniv))))
-	     ;; Use `diary-anniversary' to compute anniversary.
-	     if (and anniv (apply 'diary-anniversary anniv))
-	     collect (format-spec format
-				  `((?l . ,(org-with-point-at (cadr contact) (org-store-link nil)))
-				    (?h . ,(car contact))
-				    (?y . ,(- (calendar-extract-year date)
-					      (calendar-extract-year anniv)))
-				    (?Y . ,(let ((years (- (calendar-extract-year date)
-							   (calendar-extract-year anniv))))
-					     (format "%d%s" years (diary-ordinal-suffix years)))))))))
+	         for anniv = (let ((anniv (cdr (assoc-string
+					                        (or field rrogg/org-contacts-dayofdeath-property)
+					                        (nth 2 contact)))))
+			               (when anniv
+			                 (calendar-gregorian-from-absolute
+			                  (org-time-string-to-absolute anniv))))
+	         ;; Use `diary-anniversary' to compute anniversary.
+	         if (and anniv (apply 'diary-anniversary anniv))
+	         collect (format-spec format
+				                  `((?l . ,(org-with-point-at (cadr contact) (org-store-link nil)))
+				                    (?h . ,(car contact))
+				                    (?y . ,(- (calendar-extract-year date)
+					                          (calendar-extract-year anniv)))
+				                    (?Y . ,(let ((years (- (calendar-extract-year date)
+							                               (calendar-extract-year anniv))))
+					                         (format "%d%s" years (diary-ordinal-suffix years)))))))))
 
 (defcustom rrogg/org-contacts-dayofdeath-property "DAYOFDEATH"
   "Name of the property for contact day of death date."
@@ -2264,10 +2280,10 @@ Return value is the position of point at the beginning of the heading or =nil=.
   (save-restriction
     (widen)
     (let ((parent-task (save-excursion (org-back-to-heading t) (point))))
-        (while (org-up-heading-safe)
-          (when (member (org-get-todo-state) org-todo-keywords-1)
-            (setq parent-task (point))))
-        (goto-char parent-task))))
+      (while (org-up-heading-safe)
+        (when (member (org-get-todo-state) org-todo-keywords-1)
+          (setq parent-task (point))))
+      (goto-char parent-task))))
 #+END_SRC
 
 ****** Find Parent Planning Task
@@ -2278,10 +2294,10 @@ Return value is the position of point at the beginning of the heading or =nil=.
   (save-restriction
     (widen)
     (let ((parent-task (save-excursion (org-back-to-heading t) (point))))
-        (while (org-up-heading-safe)
-          (when (equal (org-get-todo-state) "PLANNING")
-            (setq parent-task (point))))
-        (goto-char parent-task))))
+      (while (org-up-heading-safe)
+        (when (equal (org-get-todo-state) "PLANNING")
+          (setq parent-task (point))))
+      (goto-char parent-task))))
 #+END_SRC
 
 ****** Find Parent Hold Task
@@ -2292,10 +2308,10 @@ Return value is the position of point at the beginning of the heading or =nil=.
   (save-restriction
     (widen)
     (let ((parent-task (save-excursion (org-back-to-heading t) (point))))
-        (while (org-up-heading-safe)
-          (when (equal (org-get-todo-state) "HOLD")
-            (setq parent-task (point))))
-        (goto-char parent-task))))
+      (while (org-up-heading-safe)
+        (when (equal (org-get-todo-state) "HOLD")
+          (setq parent-task (point))))
+      (goto-char parent-task))))
 #+END_SRC
 
 *** Show Small Icons in Agenda View
@@ -2310,14 +2326,33 @@ The icons are stored in =~/templates_labels/icons/=.
 (use-package org
   :config
   (setq org-agenda-category-icon-alist
-    '(("\\(Holiday\\|Vacation\\)" "~/templates_labels/icons/holiday.png" nil nil :ascent center)
-      ("Anniv." "~/templates_labels/icons/anniversary.png" nil nil :ascent center)
-      ("Spec. Date" "~/templates_labels/icons/specialdate.png" nil nil :ascent center)
-      ("Time" "~/templates_labels/icons/time.png" nil nil :ascent center)
-      ("Marriage" "~/templates_labels/icons/marriage.gif" nil nil :ascent center)
-      ("Love" "~/templates_labels/icons/love.png" nil nil :ascent center)
-      ("Mourning" "~/templates_labels/icons/mourning.png" nil nil :ascent center)
-      (".*" '(space . (:width (16)))))))
+        '(("\\(Holiday\\|Vacation\\)" "~/templates_labels/icons/holiday.png" nil nil :ascent center)
+          ("Anniv." "~/templates_labels/icons/anniversary.png" nil nil :ascent center)
+          ("Spec. Date" "~/templates_labels/icons/specialdate.png" nil nil :ascent center)
+          ("Time" "~/templates_labels/icons/time.png" nil nil :ascent center)
+          ("Marriage" "~/templates_labels/icons/marriage.gif" nil nil :ascent center)
+          ("Love" "~/templates_labels/icons/love.png" nil nil :ascent center)
+          ("Mourning" "~/templates_labels/icons/mourning.png" nil nil :ascent center)
+          (".*" '(space . (:width (16)))))))
+#+END_SRC
+
+** Code Blocks
+:PROPERTIES:
+:ID:       50f4300a-4e3d-42f7-9807-3d59be92b575
+:END:
+
+Source blocks can be edited in a window that uses the mode for the programming
+language of the block. This window will be spawned on top of the current window
+leaving the window configuration intact.
+The source code will be fontified and indented in the code block as expected for
+the language of the code.
+
+#+BEGIN_SRC emacs-lisp
+(use-package org
+  :config
+  (setq org-src-window-setup 'current-window)
+  (setq org-src-fontify-natively t)
+  (setq org-edit-src-content-indentation 0))
 #+END_SRC
 
 ** Org Mode Config Finished
