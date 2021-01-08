@@ -714,6 +714,21 @@ screen.
 (toggle-frame-maximized)
 #+END_SRC
 
+* Delimiters and Parentheses
+:PROPERTIES:
+:ID:       6eb9c2a0-2d30-444d-a7a7-08fc84ddcd0e
+:END:
+
+=show-paren-mode= highlights matching parentheses, which play a very important
+role when writing code in emacs lisp.
+
+#+BEGIN_SRC emacs-lisp
+(use-package paren
+  :config
+  (setq show-paren-style 'parenthesis)
+  :hook (after-init-hook . show-paren-mode))
+#+END_SRC
+
 * Save Commands Across Sessions
 
 Emacs doesn't have a persistent command history by default. The build-in history
