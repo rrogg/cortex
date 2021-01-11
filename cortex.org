@@ -1839,7 +1839,7 @@ section. If a task is displayed here, it can be worked on right away.
 Given by the section name, only =NEXT= stated are valid.
 
 #+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-agenda-cmd-project-next-cmd-match
-tags-todo "/!-HOLD-CANCELLED-WAITING"
+tags-todo "/!-HOLD-CANCELLED-WAITING-CALL"
 #+END_SRC
 
 [[id:b5c5c889-06c7-46b2-a89d-32327610f5a9][Standalone tasks]] are excluded from this section. Those are tasks that are
@@ -2178,7 +2178,7 @@ Similar structure to the previous identify function.
               (has-next-subtask))
           (save-excursion
             (forward-line 1)
-            (while (and (< (point) end-of-subtree) (re-search-forward "^\*+ NEXT " end-of-subtree t) (not has-next-subtask))
+            (while (and (< (point) end-of-subtree) (re-search-forward "^\*+ NEXT\\|CALL " end-of-subtree t) (not has-next-subtask))
               (setq has-next-subtask t)))
           (if has-next-subtask
               nil
