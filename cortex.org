@@ -1351,6 +1351,36 @@ the following line appears somewhere in an agenda file:
   (setq org-contacts-files '("~/org/contacts.org")))
 #+END_SRC
 
+*** Insert Link to Contact Entry
+:PROPERTIES:
+:ID:       c1b86224-1483-47d1-9e40-fc269ea9b993
+:END:
+
+=org-contacts-db= returns the complete list of contacts in the
+=org-contacts-file= including their properties.
+The list gets reduced to the sublist for the contact and further for the value
+of the property passed to the function.
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/get-contact-property (property contact)
+  "Return property value of contact."
+  (cdr
+   (assoc property
+          (nth 1 (cdr ; or (caddr
+                  (assoc contact (org-contacts-db)))))))
+#+END_SRC
+
+Calling the interactive function =rrogg/link-to-contact= will prompt for a
+contact name and insert a link to that contact at point.
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/link-to-contact ()
+  "Prompt for contact name and insert a link to contact."
+  (interactive)
+  (let ((name (org-contacts-completing-read "Name: ")))
+    (insert (concat "[[id:" (rrogg/get-contact-property "ID" name) "][" name "]]"))))
+#+END_SRC
+
 *** Additional Anniversaries
 
 To add support for other anniversaries like wedding days, date of death or other
