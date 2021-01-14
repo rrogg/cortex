@@ -1275,16 +1275,68 @@ address. Birthday and e-mail address have to be treated specially, because those
 properties break the org-agenda if not present or in the wrong format.
 
 #+BEGIN_SRC emacs-lisp
-(setq rrogg/capture-template-contact "* %?
+(setq rrogg/capture-template-contact "* %(rrogg/capture-prompt \"First Name\" 'rrogg/firstname) %(rrogg/capture-prompt \"Family Name\" 'rrogg/familyname) :%(symbol-value 'rrogg/firstname)%(symbol-value 'rrogg/familyname):
 :PROPERTIES:
-:BIRTHDAY: 
-:EMAIL: 
+:TYPE: %(rrogg/capture-selection \"Person or Company? \" '(\"person\" \"company\") 'rrogg/person-or-company)%(if (string= rrogg/person-or-company \"person\") (concat \"\n:GENDER: \" (rrogg/capture-selection \"Male or Female? \" '(\"male\" \"female\" \"transgender\") 'rrogg/gender)))
+:NICKNAME:
+:MIDDLENAME:
+:BIRTHNAME:
+:BIRTHDAY:%(if (y-or-n-p \"Birthday known? \") (concat \" \" (rrogg/capture-prompt-short-date \"Born:\" 'rrogg/birthday)) \":\") 
+:MOBILE:
+:HOMEPHONE:
+:WORKMOBILE:
+:WORKPHONE:
+:EMAIL: %(if (y-or-n-p \"E-Mail known?\") (rrogg/capture-prompt \"E-Mail private\" 'rrogg/emailprivate) \"-\")
+:WORKEMAIL:
+:URL:
+:STREET:
+:POSTALCODE:
+:CITY:
+:REGION:
+:COUNTRY:
+:COMPANY:
+:UNIT:
+:TITLE:
+:MANAGER:
+:WORKSTREET:
+:WORKPOSTALCODE:
+:WORKCITY:
+:WORKREGION:
+:WORKCOUNTRY:
+:PHOTOGRAPH: [[photo:%(symbol-value 'rrogg/firstname) %(symbol-value 'rrogg/familyname).jpg]]
 :END:
 :LOGBOOK:
 :CREATED: %U
 :END:
 
 ")
+#+END_SRC
+
+*** Functions for Capture Templates
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/capture-prompt (prompt variable)
+  "PROMPT for string, save it to VARIABLE and insert it."
+  (make-local-variable variable)
+  (set variable (read-string (concat prompt ": "))))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/capture-selection (prompt list variable)
+  "Let the user choose between a pre-defined set of strings and save it to VARIABLE."
+  (make-local-variable variable)
+  (let ((selected-value (completing-read prompt list nil t)))
+    (set variable selected-value)))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/capture-prompt-short-date (prompt variable)
+  "PROMPT for a date, save it to VARIABLE and insert it as time stamp (YYYY-MM-DD)."
+  (make-local-variable variable)
+  (set variable
+       (format-time-string
+        "%Y-%m-%d"
+        (org-read-date nil t nil prompt))))
 #+END_SRC
 
 *** Calling Capture Templates
@@ -1295,18 +1347,18 @@ contact information).
 After the capture process is completed for an item, a unique ID is created and
 attached to it.
 
- #+BEGIN_SRC emacs-lisp
- (use-package org
-   :config
-   (setq org-capture-templates `(("t" "Task" entry (file org-default-refile-file)
-                                  ,rrogg/capture-template-task)
-                                 ("c" "Call" entry (file org-default-refile-file)
-                                  ,rrogg/capture-template-call)
-                                 ("C" "Contact" entry (file org-default-refile-file)
-                                  ,rrogg/capture-template-contact)
-                                 ("n" "Note" entry (file org-default-notes-file)
-                                  ,rrogg/capture-template-note)))
-  :hook (org-capture-prepare-finalize-hook . org-id-get-create))
+#+BEGIN_SRC emacs-lisp
+(use-package org
+  :config
+  (setq org-capture-templates `(("t" "Task" entry (file org-default-refile-file)
+                                 ,rrogg/capture-template-task)
+                                ("c" "Call" entry (file org-default-refile-file)
+                                 ,rrogg/capture-template-call)
+                                ("C" "Contact" entry (file org-default-refile-file)
+                                 ,rrogg/capture-template-contact)
+                                ("n" "Note" entry (file org-default-notes-file)
+                                 ,rrogg/capture-template-note)))
+ :hook (org-capture-prepare-finalize-hook . org-id-get-create))
 #+END_SRC
 
 ** Organize Captured Items
@@ -1351,34 +1403,148 @@ the following line appears somewhere in an agenda file:
   (setq org-contacts-files '("~/org/contacts.org")))
 #+END_SRC
 
-*** Insert Link to Contact Entry
+*** Functions for Contacts
+**** Link to Contact Entry
 :PROPERTIES:
 :ID:       c1b86224-1483-47d1-9e40-fc269ea9b993
 :END:
 
-=org-contacts-db= returns the complete list of contacts in the
-=org-contacts-file= including their properties.
-The list gets reduced to the sublist for the contact and further for the value
-of the property passed to the function.
-
-#+BEGIN_SRC emacs-lisp
-(defun rrogg/get-contact-property (property contact)
-  "Return property value of contact."
-  (cdr
-   (assoc property
-          (nth 1 (cdr ; or (caddr
-                  (assoc contact (org-contacts-db)))))))
-#+END_SRC
-
 Calling the interactive function =rrogg/link-to-contact= will prompt for a
-contact name and insert a link to that contact at point.
+contact name and insert a link to that contact.
 
 #+BEGIN_SRC emacs-lisp
 (defun rrogg/link-to-contact ()
   "Prompt for contact name and insert a link to contact."
   (interactive)
-  (let ((name (org-contacts-completing-read "Name: ")))
+  (let ((name (rrogg/prompt-contact-name)))
     (insert (concat "[[id:" (rrogg/get-contact-property "ID" name) "][" name "]]"))))
+#+END_SRC
+
+**** Contact Properties
+
+The following functions interact with the properties of a contact.
+
+***** Insert or Display a Property of a Contact
+:PROPERTIES:
+:ID:       292faf67-ac3a-4b86-84c7-15ac51ec3596
+:END:
+
+Getting property values of contacts in =org-contacts-db= can be achieved with
+=rrogg/insert-contact-property= and =rrogg/display-contact-property=, depending
+on whether to insert the value in buffer or displaying the value in the
+minibuffer.
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/insert-contact-property ()
+  "Prompt for contact name and a property key and insert property value."
+  (interactive)
+  (let* ((name (rrogg/prompt-contact-name))
+         (alist (rrogg/get-contact-property-alist name t))
+         (prop (rrogg/prompt-contact-property alist)))
+    (insert (cdr (assoc prop alist)))))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/display-contact-property ()
+  "Prompt for contact name and a property key and display property value in minibuffer."
+  (interactive)
+  (let* ((name (rrogg/prompt-contact-name))
+         (alist (rrogg/get-contact-property-alist name t))
+         (prop (rrogg/prompt-contact-property alist)))
+    (message "%s" (cdr (assoc prop alist)))))
+#+END_SRC
+
+***** Update a Property of a Contact
+:PROPERTIES:
+:ID:       5ab43656-f41d-4633-b316-39eb70afaf45
+:END:
+
+Properties of contacts can be updated from any Emacs buffer by calling
+=rrogg/update-contact-property=. The function will prompt for a contact and a
+property to update. If a text was selected when the function has been called,
+the selected region can be used as value for the property. Else another prompt
+for the value will be spawned.
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/update-contact-property ()
+  "Prompt for contact name and a property key and update its value to the selected region in current buffer or prompt for a value."
+  (interactive)
+  (let* ((name (rrogg/prompt-contact-name))
+         (marker (cadr (assoc name (org-contacts-db))))
+         (alist (rrogg/get-contact-property-alist name))
+         (prop (rrogg/prompt-contact-property alist))
+         (current (org-entry-get marker prop))
+         (valuelist (org-with-point-at marker (org-property-values prop)))
+         (value-from-region (when (use-region-p)
+                              (buffer-substring-no-properties (region-beginning) (region-end))))
+         (prompt (if (use-region-p)
+                     (concat "Update :" prop ": (currently \"" current "\") with \"" value-from-region "\"? ")
+                   (concat "Value for :" prop ": (currently \"" current "\"): ")))
+         (value (if (use-region-p)
+                    (if (y-or-n-p prompt)
+                        value-from-region
+                      current)
+                  (completing-read prompt valuelist))))
+    (if (not (equal value current))
+             (org-entry-put marker prop value))))
+#+END_SRC
+
+**** Helper Functions for Contacts
+
+=org-contacts-db= returns the complete list of contacts in the
+=org-contacts-file= including their properties.
+The list gets reduced to the sublist for the contact and further for the value
+of the property passed to the function.
+The reduction is based on this [[https://emacs.stackexchange.com/questions/34437/how-to-get-the-value-of-id-property-of-a-org-contacts-entry-in-an-org-capture][hint]].
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/get-contact-property (property contact)
+  "Return the value of a CONTACT's PROPERTY."
+  (cdr
+   (assoc property (rrogg/get-contact-property-alist contact))))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/get-contact-property-alist (contact &optional filter)
+  "Return the property alist of a CONTACT.
+If FILTER is non-nil, return an alist without properties that have empty values."
+  (let ((alist
+         (nth 1 (cdr
+                 (assoc contact (org-contacts-db))))))
+    (if filter
+        (map-remove
+         'rrogg/empty-string-cons-cell-p
+         alist)
+      alist)))
+#+END_SRC
+
+=rrogg/empty-string-cons-cell-p= is a predicate function that is used to decide
+if a cons cell (=(key . val)=) should be removed from an alist. It will return
+=t= if either key or val of the cons cell is an empty string (=""=).
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/empty-string-cons-cell-p (key val)
+  "Check if KEY or VAL contain an empty string."
+  (if (or (equal key "")
+          (equal val ""))
+      t
+    nil))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/prompt-contact-name ()
+  "Prompt for a contact name in contacts.org."
+  (org-contacts-completing-read "Contact Name: "))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/prompt-contact-property (alist &optional prompt)
+  "Prompt for a property key in ALIST"
+  (completing-read
+   (if prompt
+       prompt
+     "Property: ")
+   alist nil t))
 #+END_SRC
 
 *** Additional Anniversaries
