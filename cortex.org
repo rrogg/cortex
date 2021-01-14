@@ -637,7 +637,8 @@ recover-file <RET> file <RET>=.
 
 * Magit - Using git Within Emacs
 
-| [2020-10-20] | Initial setup |
+| [2020-10-20] | Initial setup        |
+| [2021-01-14] | Tweaked commit setup |
 
 =magit= is a superb interface to =git=.
 
@@ -701,7 +702,16 @@ The body of the message is wrapped at length 72.
   :if (rrogg/eval-if-binary-or-warn "git")
   :config
   (setq git-commit-summary-max-length 50)
-  (setq git-commit-fill-column 72))
+  (setq git-commit-fill-column 72)
+  (defun rrogg/git-commit-setup()
+    (insert "#1. Capitalize the subject line
+#2. Do not end the subject line with a period
+#3. Use the present tense imperative mood in the subject line and body
+#4. Use the body to explain what and why vs. how
+#-----------------------------------------------
+#If applied, this commit will …
+"))
+  :hook (git-commit-setup-hook . rrogg/git-commit-setup))
 #+END_SRC
 
 * Maximize Frame Window
