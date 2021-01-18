@@ -1385,7 +1385,8 @@ logged into the item's logbook drawer.
 (use-package org
   :config
   (setq org-refile-targets '((nil :maxlevel . 9)
-			                 (org-agenda-files :maxlevel . 9)))
+			                 (org-agenda-files :maxlevel . 9)
+                             (org-contacts-files :maxlevel . 9)))
   (setq org-refile-use-outline-path 'file)
   (setq org-outline-path-complete-in-steps nil)
   (setq org-refile-allow-creating-parent-nodes '(confirm))
@@ -2080,7 +2081,7 @@ All tasks are matched against the following todo-states or tags:
 - Skip =CALL= tasks - those are only shown in the agenda.
 
 #+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-agenda-cmd-standalone-cmd-match
-tags-todo "-REFILE/!-CANCELLED-CALL"
+tags-todo "-REFILE/!-CANCELLED-CALL-WAITING"
 #+END_SRC
 
 The remaining candidates to display still contain projects and project tasks.
