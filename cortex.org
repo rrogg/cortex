@@ -865,6 +865,173 @@ the scaling can easily be done via =-= and =+=.
   (setq-default pdf-view-display-size 'fit-page))
 #+END_SRC
 
+** Tmp Directories
+
+Directories for temporarily storing data for processing.
+
+#+BEGIN_SRC emacs-lisp
+(setq rrogg/tmp-tools-directory "~/tmp/tools/")
+(setq rrogg/tmp-pdf-split-directory (expand-file-name (concat rrogg/tmp-tools-directory "pdfseparate/")))
+#+END_SRC
+
+** Selected Pages
+
+Select pages from a PDF.
+
+#+BEGIN_SRC emacs-lisp
+(defvar-local rrogg/pdf-selected-pages '())
+
+(defun rrogg/pdf-select-page ()
+  "Add current page to list of selected pages."
+  (interactive)
+  (add-to-list 'rrogg/pdf-selected-pages (pdf-view-current-page) t)
+  (setq rrogg/pdf-selected-pages (sort rrogg/pdf-selected-pages #'<)))
+#+END_SRC
+
+** All Pages
+
+Find out how many pages a document has and build a list with one entry for each
+page.
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/pdf-get-all-pages-list ()
+  "Get a list of all pages of current PDF."
+  (number-sequence 1 (pdf-cache-number-of-pages)))
+#+END_SRC
+
+** Prepare List
+
+*** Delete Selection List
+
+Remove all selected pages from the list of all pages.
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/pdf-remaining-pages-list (seq1 seq2)
+  "Build a list of all pages of current PDF that remain in output PDF."
+  (seq-difference seq1 seq2))
+#+END_SRC
+
+*** Expand List
+
+Replace each page (number) in the list with the complete path to the PDF of that
+page within the tmp directory.
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/build-list (seq)
+  "."
+  (--map
+   (concat
+    rrogg/tmp-pdf-split-directory
+    (file-name-base buffer-file-name)
+    "-"
+    it
+    ".pdf")
+   (mapcar
+    'number-to-string
+    seq)))
+#+END_SRC
+
+*** Process List
+
+Add the output file name to the end of the list of input files.
+The resulting list has all input arguments for the PDF processing.
+
+#+BEGIN_SRC emacs-lisp
+(defvar-local rrogg/pdf-merge-args '())
+
+(defun rrogg/pdf-append-output-file (inputlist)
+  "."
+  (add-to-list
+   'inputlist
+   (expand-file-name (read-file-name "Save selection as: ")) t))
+#+END_SRC
+
+** Process Pages
+
+*** Split
+
+Split the PDF in the current buffer into one PDF per page.
+Use the tmp directory to store these files.
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/pdf-split ()
+  "."
+  (start-process
+   "pdfseparate"
+   "*pdf-processing*"
+   "pdfseparate"
+   (buffer-file-name)
+   (concat
+    rrogg/tmp-pdf-split-directory
+    (file-name-base buffer-file-name)
+    "-%d.pdf")))
+#+END_SRC
+
+*** Merge
+
+Combine all PDFs specified in buffer local variable =rrogg/pdf-merge-args= into
+a single PDF.
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/pdf-merge ()
+  "."
+  (apply
+   'start-process
+   "pdfunite"
+   "*pdf-processing*"
+   "pdfunite"
+   rrogg/pdf-merge-args))
+#+END_SRC
+
+*** Clean
+
+Delete all tmp files.
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/clean-up ()
+  "."
+  (dolist (x (rrogg/build-list (rrogg/pdf-get-all-pages-list)))
+    (delete-file x)))
+#+END_SRC
+
+*** Full
+
+Full function for extracting selected PDF pages into a single PDF.
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/pdf-extract-selected-pages ()
+  "."
+  (interactive)
+  (setq rrogg/pdf-merge-args (rrogg/pdf-append-output-file
+                              (rrogg/build-list rrogg/pdf-selected-pages)))
+  (set-process-sentinel
+   (rrogg/pdf-split)
+   (lambda (process event) (when (= 0 (process-exit-status process))
+                             (set-process-sentinel
+                              (rrogg/pdf-merge)
+                              (lambda (process event) (when (= 0 (process-exit-status process))
+                                                         (rrogg/clean-up))))))))
+#+END_SRC
+
+Full function for deleting selected PDFs from the source PDF. The resulting PDF
+can also be saved in another files.
+
+#+BEGIN_SRC emacs-lisp
+(defun rrogg/pdf-delete-selected-pages ()
+  "."
+  (interactive)
+  (setq rrogg/pdf-merge-args (rrogg/pdf-append-output-file
+                              (rrogg/build-list
+                               (rrogg/pdf-remaining-pages-list (rrogg/pdf-get-all-pages-list) rrogg/pdf-selected-pages))))
+  (set-process-sentinel
+   (rrogg/pdf-split)
+   (lambda (process event) (when (= 0 (process-exit-status process))
+                             (set-process-sentinel
+                              (rrogg/pdf-merge)
+                              (lambda (process event) (when (= 0 (process-exit-status process))
+                                                         (rrogg/clean-up))))))))
+#+END_SRC
+
 * Calendar
 
 The agenda is also used as a calendar.
