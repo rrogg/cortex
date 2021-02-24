@@ -2060,7 +2060,7 @@ agenda.
 #+BEGIN_SRC emacs-lisp
 (use-package org
   :config
-  (setq org-agenda-files '("~/org/refile.org" "~/org/work/work.org" "~/org/private/private.org"))
+  (setq org-agenda-files '("~/org/refile.org" "~/org/agenda-settings.org" "~/org/work/work.org" "~/org/private/private.org"))
   :bind ("C-c a" . org-agenda))
 #+END_SRC
 
@@ -2077,7 +2077,11 @@ The agenda setup is drawing heavily from the amazing work of [[http://doc.norang
   :config
   (setq org-agenda-custom-commands '())
   (add-to-list 'org-agenda-custom-commands
-          <<my-agenda>>))
+          <<my-agenda>>)
+  (add-to-list 'org-agenda-custom-commands
+          <<my-work-agenda>>)
+  (add-to-list 'org-agenda-custom-commands
+          <<my-private-agenda>>))
 #+END_SRC
 
 **** My Agenda
@@ -2314,6 +2318,52 @@ Everything that is not a task will be skipped by [[id:25074132-89d0-4e89-98bd-be
 #+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-agenda-cmd-waiting-settings
 ((org-agenda-overriding-header "Waiting and On-Hold Tasks")
  (org-agenda-skip-function 'rrogg/skip-non-tasks))
+#+END_SRC
+
+**** My Work Agenda
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb yes :noweb-ref my-work-agenda
+'(<<my-work-agenda-key-desc>>
+  (<<my-agenda-cmd-agenda>>
+   <<my-agenda-cmd-refile>>
+   <<my-agenda-cmd-stuck-project>>
+   <<my-agenda-cmd-project>>
+   <<my-agenda-cmd-project-next>>
+   <<my-agenda-cmd-standalone>>
+   <<my-agenda-cmd-project-plan>>
+   <<my-agenda-cmd-waiting>>)
+  ((org-agenda-files '("~/org/refile.org" "~/org/agenda-settings.org" "~/org/work/work.org"))))
+#+END_SRC
+
+The agenda can be called by pressing =key= when on the agenda dispatcher. The
+complete key command is =C-c a w=.
+A description of the view is passed to the agenda dispatcher via =desc=.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-work-agenda-key-desc
+"w" "My Work Agenda"
+#+END_SRC
+
+**** My Private Agenda
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb yes :noweb-ref my-private-agenda
+'(<<my-private-agenda-key-desc>>
+  (<<my-agenda-cmd-agenda>>
+   <<my-agenda-cmd-refile>>
+   <<my-agenda-cmd-stuck-project>>
+   <<my-agenda-cmd-project>>
+   <<my-agenda-cmd-project-next>>
+   <<my-agenda-cmd-standalone>>
+   <<my-agenda-cmd-project-plan>>
+   <<my-agenda-cmd-waiting>>)
+  ((org-agenda-files '("~/org/refile.org" "~/org/agenda-settings.org" "~/org/private/private.org"))))
+#+END_SRC
+
+The agenda can be called by pressing =key= when on the agenda dispatcher. The
+complete key command is =C-c a p=.
+A description of the view is passed to the agenda dispatcher via =desc=.
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb-ref my-private-agenda-key-desc
+"p" "My Private Agenda"
 #+END_SRC
 
 **** Functions for Agenda Building
