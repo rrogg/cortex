@@ -1036,6 +1036,19 @@ can also be saved in another files.
 
 The agenda is also used as a calendar.
 
+** General
+
+When prompting for a date, e.g. when scheduling a task, the Emacs calendar is
+used to give an overview of the last, current and upcoming month.
+The week column shows Sunday as first day of the week by default, while Monday
+is what I want.
+
+#+BEGIN_SRC emacs-lisp
+(use-package calendar
+  :init
+  (setq calendar-week-start-day 1))
+#+END_SRC
+
 ** German Holidays
 
 Information about German holidays are featured in the calendar, making it easy
