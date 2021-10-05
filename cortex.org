@@ -1032,6 +1032,19 @@ can also be saved in another files.
                                                          (rrogg/clean-up))))))))
 #+END_SRC
 
+* eBooks
+
+| [2021-10-05] | Initial setup |
+
+Emacs can't render the epub format out of the box.
+A package called =nov.el= can do that.
+
+#+BEGIN_SRC emacs-lisp
+(use-package nov
+  :ensure t)
+(add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
+#+END_SRC
+
 * Calendar
 
 The agenda is also used as a calendar.
