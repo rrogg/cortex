@@ -2086,7 +2086,7 @@ agenda.
 #+BEGIN_SRC emacs-lisp
 (use-package org
   :config
-  (setq org-agenda-files '("~/org/refile.org" "~/org/agenda-settings.org" "~/org/work/work.org" "~/org/private/private.org"))
+  (setq org-agenda-files '("~/org/refile.org" "~/org/agenda-settings.org" "~/org/work/work.org" "~/org/private/private.org" "~/org/family/family.org"))
   :bind ("C-c a" . org-agenda))
 #+END_SRC
 
@@ -2358,7 +2358,7 @@ Everything that is not a task will be skipped by [[id:25074132-89d0-4e89-98bd-be
    <<my-agenda-cmd-standalone>>
    <<my-agenda-cmd-project-plan>>
    <<my-agenda-cmd-waiting>>)
-  ((org-agenda-files '("~/org/refile.org" "~/org/agenda-settings.org" "~/org/work/work.org"))))
+  ((org-agenda-files '("~/org/refile.org" "~/org/agenda-settings.org" "~/org/work/work.org" "~/org/family/family.org"))))
 #+END_SRC
 
 The agenda can be called by pressing =key= when on the agenda dispatcher. The
@@ -2381,7 +2381,7 @@ A description of the view is passed to the agenda dispatcher via =desc=.
    <<my-agenda-cmd-standalone>>
    <<my-agenda-cmd-project-plan>>
    <<my-agenda-cmd-waiting>>)
-  ((org-agenda-files '("~/org/refile.org" "~/org/agenda-settings.org" "~/org/private/private.org"))))
+  ((org-agenda-files '("~/org/refile.org" "~/org/agenda-settings.org" "~/org/private/private.org" "~/org/family/family.org"))))
 #+END_SRC
 
 The agenda can be called by pressing =key= when on the agenda dispatcher. The
